@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  # database:
+  #   image: postgres:15-alpine
+  #   container_name: cnc-database
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_DB: CNCTaskManagementDB
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: password
+  #     POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+  #   networks:
+  #     - cnc-network
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres -d CNCTaskManagementDB"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: cnc-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass redispassword
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - cnc-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cnc-backend
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=192.168.31.102;Port=5432;Database=CNCTaskManagementDB;Username=postgres;Password=Admin12345
+      - Redis__ConnectionString=cnc-redis:6379,password=redispassword
+      - JWT__Secret=ThisIsASecretKeyForJWTTokenGenerationMinimum32Characters
+      - JWT__Issuer=CNC Task Management
+      - JWT__Audience=CNC Task Management Users
+      - JWT__ExpirationMinutes=60
+      - FileStorage__Path=/app/uploads
+      - FileStorage__MaxFileSize=20971520
+      - Logging__LogLevel__Default=Information
+      - Logging__LogLevel__Microsoft.AspNetCore=Warning
+    volumes:
+      - uploads_data:/app/uploads
+    ports:
+      - "8080:80"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - cnc-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+networks:
+  cnc-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
