@@ -11,8 +11,10 @@ export const ThemeSwitcher: React.FC = () => {
     const root = document.documentElement;
     if (theme === 'dark') {
       root.classList.add('dark');
+      document.documentElement.setAttribute('data-theme', 'dark');
     } else {
       root.classList.remove('dark');
+      document.documentElement.setAttribute('data-theme', 'light');
     }
   }, [theme]);
 
@@ -28,11 +30,11 @@ export const ThemeSwitcher: React.FC = () => {
     <div className="relative">
       <button
         onClick={handleThemeToggle}
-        className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:text-gray-300 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-primary"
+        className="p-2 text-gray-400 rounded-md hover:text-gray-500 hover:bg-gray-100 dark:hover:text-gray-300 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-primary"
         title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
       >
         {theme === 'light' ? (
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -41,7 +43,7 @@ export const ThemeSwitcher: React.FC = () => {
             />
           </svg>
         ) : (
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -60,12 +62,16 @@ export const ThemeDropdown: React.FC = () => {
   const dispatch = useAppDispatch();
   const { theme } = useAppSelector(state => state.ui);
 
+  const handleThemeChange = (newTheme: 'light' | 'dark') => {
+    dispatch(setTheme(newTheme));
+  };
+
   const themes = [
     {
       name: 'Light',
       value: 'light',
       icon: (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -79,7 +85,7 @@ export const ThemeDropdown: React.FC = () => {
       name: 'Dark',
       value: 'dark',
       icon: (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -93,7 +99,7 @@ export const ThemeDropdown: React.FC = () => {
       name: 'System',
       value: 'system',
       icon: (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -123,7 +129,7 @@ export const ThemeDropdown: React.FC = () => {
             <span>{themeOption.name}</span>
             {theme === themeOption.value && (
               <svg
-                className="h-4 w-4 ml-auto"
+                className="w-4 h-4 ml-auto"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
