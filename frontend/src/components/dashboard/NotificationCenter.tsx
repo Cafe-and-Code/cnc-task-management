@@ -27,7 +27,7 @@ export const NotificationCenter: React.FC = () => {
     switch (type) {
       case 'task':
         return (
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -38,7 +38,7 @@ export const NotificationCenter: React.FC = () => {
         );
       case 'project':
         return (
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -49,7 +49,7 @@ export const NotificationCenter: React.FC = () => {
         );
       case 'sprint':
         return (
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -60,7 +60,7 @@ export const NotificationCenter: React.FC = () => {
         );
       case 'success':
         return (
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -71,7 +71,7 @@ export const NotificationCenter: React.FC = () => {
         );
       case 'warning':
         return (
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -82,7 +82,7 @@ export const NotificationCenter: React.FC = () => {
         );
       case 'error':
         return (
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -93,7 +93,7 @@ export const NotificationCenter: React.FC = () => {
         );
       default:
         return (
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -133,13 +133,13 @@ export const NotificationCenter: React.FC = () => {
   const displayedNotifications = showAll ? notifications : notifications.slice(0, 5);
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Notifications</h3>
             {unreadCount > 0 && (
-              <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+              <span className="px-2 py-1 text-xs font-bold text-white bg-red-500 rounded-full">
                 {unreadCount}
               </span>
             )}
@@ -148,7 +148,7 @@ export const NotificationCenter: React.FC = () => {
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="text-xs text-brand-primary hover:text-brand-primary/80 font-medium"
+                className="text-xs font-medium text-brand-primary hover:text-brand-primary/80"
               >
                 Mark all read
               </button>
@@ -158,7 +158,7 @@ export const NotificationCenter: React.FC = () => {
                 onClick={() => {
                   // TODO: Show all notifications
                 }}
-                className="text-xs text-brand-primary hover:text-brand-primary/80 font-medium"
+                className="text-xs font-medium text-brand-primary hover:text-brand-primary/80"
               >
                 View all
               </button>
@@ -170,18 +170,18 @@ export const NotificationCenter: React.FC = () => {
           <div className="space-y-3">
             {[1, 2, 3].map(i => (
               <div key={i} className="flex items-start space-x-3 animate-pulse">
-                <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                <div className="w-8 h-8 bg-gray-200 rounded-full dark:bg-gray-700"></div>
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                  <div className="w-3/4 h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
+                  <div className="w-full h-3 bg-gray-200 rounded dark:bg-gray-700"></div>
                 </div>
               </div>
             ))}
           </div>
         ) : notifications.length === 0 ? (
-          <div className="text-center py-8">
+          <div className="py-8 text-center">
             <svg
-              className="mx-auto h-12 w-12 text-gray-400"
+              className="w-12 h-12 mx-auto text-gray-400"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -215,17 +215,17 @@ export const NotificationCenter: React.FC = () => {
                       <p className="text-sm font-medium text-gray-900 dark:text-white">
                         {notification.title}
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                         {notification.message}
                       </p>
-                      <div className="flex items-center space-x-3 mt-2">
+                      <div className="flex items-center mt-2 space-x-3">
                         <span className="text-xs text-gray-500 dark:text-gray-400">
                           {formatDistanceToNow(notification.timestamp, { addSuffix: true })}
                         </span>
                         {notification.action && (
                           <button
                             onClick={notification.action.onClick}
-                            className="text-xs text-brand-primary hover:text-brand-primary/80 font-medium"
+                            className="text-xs font-medium text-brand-primary hover:text-brand-primary/80"
                           >
                             {notification.action.label}
                           </button>
@@ -255,7 +255,7 @@ export const NotificationCenter: React.FC = () => {
               onClick={() => {
                 // TODO: Show fewer notifications
               }}
-              className="text-sm text-brand-primary hover:text-brand-primary/80 font-medium"
+              className="text-sm font-medium text-brand-primary hover:text-brand-primary/80"
             >
               Show less
             </button>
