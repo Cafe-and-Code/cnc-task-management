@@ -100,6 +100,7 @@ export const ProjectsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+  
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -283,98 +284,98 @@ export const ProjectsPage: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {projects.map(project => (
-            <Link
-              key={project.id}
-              to={`/projects/${project.id}`}
-              className="p-6 transition-shadow duration-200 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 hover:shadow-md"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h3 className="mb-1 text-lg font-medium text-gray-900 dark:text-white">
-                    {project.name}
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                    {project.description || 'No description provided'}
-                  </p>
+            {projects.map(project => (
+              <Link
+                key={project.id}
+                to={`/projects/${project.id}`}
+                className="p-6 transition-shadow duration-200 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 hover:shadow-md"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <h3 className="mb-1 text-lg font-medium text-gray-900 dark:text-white">
+                      {project.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                      {project.description || 'No description provided'}
+                    </p>
+                  </div>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}
+                  >
+                    {project.status}
+                  </span>
                 </div>
-                <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}
-                >
-                  {project.status}
-                </span>
-              </div>
 
-              {/* Progress */}
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-1 text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Progress</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {getProjectProgress(project)}%
-                  </span>
-                </div>
-                <div className="w-full h-2 bg-gray-200 rounded-full dark:bg-gray-700">
-                  <div
-                    className="h-2 transition-all duration-300 rounded-full bg-brand-primary"
-                    style={{ width: `${getProjectProgress(project)}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* Project Details */}
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Duration</span>
-                  <span className="text-gray-900 dark:text-white">
-                    {formatDuration(project.startDate, project.endDate)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Teams</span>
-                  <span className="text-gray-900 dark:text-white">{project.teamCount || 0}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Sprints</span>
-                  <span className="text-gray-900 dark:text-white">
-                    {project.activeSprintCount || 0} active
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Velocity Goal</span>
-                  <span className="text-gray-900 dark:text-white">
-                    {project.velocityGoal} points
-                  </span>
-                </div>
-              </div>
-
-              {/* Team Members */}
-              {(project.productOwner || project.scrumMaster) && (
-                <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
-                  <div className="flex -space-x-2">
-                    {project.productOwner && (
-                      <div className="relative">
-                        <div className="flex items-center justify-center w-8 h-8 text-xs font-medium text-white rounded-full bg-brand-primary ring-2 ring-white dark:ring-gray-800">
-                          {project.productOwner.firstName?.charAt(0) || 'P'}
-                          {project.productOwner.lastName?.charAt(0) || 'O'}
-                        </div>
-                        <span className="absolute bottom-0 right-0 block w-2 h-2 bg-green-400 rounded-full ring-1 ring-white dark:ring-gray-800"></span>
-                      </div>
-                    )}
-                    {project.scrumMaster && (
-                      <div className="relative">
-                        <div className="flex items-center justify-center w-8 h-8 text-xs font-medium text-white bg-blue-500 rounded-full ring-2 ring-white dark:ring-gray-800">
-                          {project.scrumMaster.firstName?.charAt(0) || 'S'}
-                          {project.scrumMaster.lastName?.charAt(0) || 'M'}
-                        </div>
-                        <span className="absolute bottom-0 right-0 block w-2 h-2 bg-green-400 rounded-full ring-1 ring-white dark:ring-gray-800"></span>
-                      </div>
-                    )}
+                {/* Progress */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-1 text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">Progress</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {getProjectProgress(project)}%
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-gray-200 rounded-full dark:bg-gray-700">
+                    <div
+                      className="h-2 transition-all duration-300 rounded-full bg-brand-primary"
+                      style={{ width: `${getProjectProgress(project)}%` }}
+                    ></div>
                   </div>
                 </div>
-              )}
-            </Link>
-          ))}
-        </div>
+
+                {/* Project Details */}
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Duration</span>
+                    <span className="text-gray-900 dark:text-white">
+                      {formatDuration(project.startDate, project.endDate)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Teams</span>
+                    <span className="text-gray-900 dark:text-white">{project.teamCount || 0}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Sprints</span>
+                    <span className="text-gray-900 dark:text-white">
+                      {project.activeSprintCount || 0} active
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Velocity Goal</span>
+                    <span className="text-gray-900 dark:text-white">
+                      {project.velocityGoal} points
+                    </span>
+                  </div>
+                </div>
+
+                {/* Team Members */}
+                {(project.productOwner || project.scrumMaster) && (
+                  <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex -space-x-2">
+                      {project.productOwner && (
+                        <div className="relative">
+                          <div className="flex items-center justify-center w-8 h-8 text-xs font-medium text-white rounded-full bg-brand-primary ring-2 ring-white dark:ring-gray-800">
+                            {project.productOwner.firstName?.charAt(0) || 'P'}
+                            {project.productOwner.lastName?.charAt(0) || 'O'}
+                          </div>
+                          <span className="absolute bottom-0 right-0 block w-2 h-2 bg-green-400 rounded-full ring-1 ring-white dark:ring-gray-800"></span>
+                        </div>
+                      )}
+                      {project.scrumMaster && (
+                        <div className="relative">
+                          <div className="flex items-center justify-center w-8 h-8 text-xs font-medium text-white bg-blue-500 rounded-full ring-2 ring-white dark:ring-gray-800">
+                            {project.scrumMaster.firstName?.charAt(0) || 'S'}
+                            {project.scrumMaster.lastName?.charAt(0) || 'M'}
+                          </div>
+                          <span className="absolute bottom-0 right-0 block w-2 h-2 bg-green-400 rounded-full ring-1 ring-white dark:ring-gray-800"></span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </Link>
+            ))}
+          </div>
       )}
     </div>
   );

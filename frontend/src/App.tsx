@@ -10,7 +10,7 @@ import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage.tsx';
 import { ResetPasswordPage } from './pages/auth/ResetPasswordPage.tsx';
 import { DashboardPage } from './pages/DashboardPage.tsx';
 import { ProfilePage } from './pages/ProfilePage.tsx';
-import { ProjectListPage } from './pages/projects/ProjectListPage.tsx';
+import { ProjectsPage } from './pages/projects/ProjectsPage.tsx';
 import { ProjectDetailPage } from './pages/projects/ProjectDetailPage.tsx';
 import { ProjectFormPage } from './pages/projects/ProjectFormPage.tsx';
 import { LoadingSpinner } from './components/ui/LoadingSpinner.tsx';
@@ -53,7 +53,7 @@ function App() {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="profile" element={<ProfilePage />} />
-        <Route path="projects" element={<ProjectListPage />} />
+        <Route path="projects" element={<ProjectsPage />} />
         <Route path="projects/new" element={<ProjectFormPage />} />
         <Route path="projects/:projectId" element={<ProjectDetailPage />} />
         <Route path="projects/:projectId/edit" element={<ProjectFormPage />} />
