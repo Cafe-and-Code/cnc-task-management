@@ -39,19 +39,19 @@ interface UpdateUserStoryData {
 export const userStoryService = {
   // Get all user stories
   async getUserStories(params: GetUserStoriesParams = {}): Promise<PaginatedResponse<UserStory>> {
-    const response = await apiClient.get('/user-stories', { params });
+    const response = await apiClient.get('/UserStories', { params });
     return response.data;
   },
 
   // Get user story by ID
   async getUserStory(storyId: number): Promise<UserStory> {
-    const response = await apiClient.get(`/user-stories/${storyId}`);
+    const response = await apiClient.get(`/UserStories/${storyId}`);
     return response.data;
   },
 
   // Create new user story
   async createUserStory(storyData: CreateUserStoryData): Promise<UserStory> {
-    const response = await apiClient.post('/user-stories', storyData);
+    const response = await apiClient.post('/UserStories', storyData);
     return response.data;
   },
 
@@ -60,25 +60,25 @@ export const userStoryService = {
     storyId: number,
     storyData: UpdateUserStoryData
   ): Promise<UserStory> {
-    const response = await apiClient.put(`/user-stories/${storyId}`, storyData);
+    const response = await apiClient.put(`/UserStories/${storyId}`, storyData);
     return response.data;
   },
 
   // Delete user story
   async deleteUserStory(storyId: number): Promise<{ message: string }> {
-    const response = await apiClient.delete(`/user-stories/${storyId}`);
+    const response = await apiClient.delete(`/UserStories/${storyId}`);
     return response.data;
   },
 
   // Move user story to sprint
   async moveToSprint(storyId: number, sprintId: number): Promise<UserStory> {
-    const response = await apiClient.post(`/user-stories/${storyId}/move-to-sprint`, { sprintId });
+    const response = await apiClient.post(`/UserStories/${storyId}/move-to-sprint`, { sprintId });
     return response.data;
   },
 
   // Move user story to backlog
   async moveToBacklog(storyId: number): Promise<UserStory> {
-    const response = await apiClient.post(`/user-stories/${storyId}/move-to-backlog`);
+    const response = await apiClient.post(`/UserStories/${storyId}/move-to-backlog`);
     return response.data;
   },
 
@@ -96,19 +96,19 @@ export const userStoryService = {
 
   // Update story status
   async updateStatus(storyId: number, status: UserStoryStatus): Promise<UserStory> {
-    const response = await apiClient.patch(`/user-stories/${storyId}/status`, { status });
+    const response = await apiClient.patch(`/UserStories/${storyId}/status`, { status });
     return response.data;
   },
 
   // Assign story to user
   async assignToUser(storyId: number, assigneeId: number): Promise<UserStory> {
-    const response = await apiClient.patch(`/user-stories/${storyId}/assign`, { assigneeId });
+    const response = await apiClient.patch(`/UserStories/${storyId}/assign`, { assigneeId });
     return response.data;
   },
 
   // Unassign story
   async unassign(storyId: number): Promise<UserStory> {
-    const response = await apiClient.patch(`/user-stories/${storyId}/unassign`);
+    const response = await apiClient.patch(`/UserStories/${storyId}/unassign`);
     return response.data;
   },
 };

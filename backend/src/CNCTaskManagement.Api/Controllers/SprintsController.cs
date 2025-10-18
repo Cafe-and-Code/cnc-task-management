@@ -370,7 +370,7 @@ namespace CNCTaskManagement.Api.Controllers
         /// <summary>
         /// Add user stories to sprint
         /// </summary>
-        [HttpPost("{id}/user-stories")]
+        [HttpPost("{id}/UserStories")]
         [RequireRole(UserRole.Admin, UserRole.ScrumMaster)]
         public async Task<IActionResult> AddUserStoriesToSprint(int id, [FromBody] AddUserStoriesToSprintModel model)
         {
@@ -419,7 +419,7 @@ namespace CNCTaskManagement.Api.Controllers
         /// <summary>
         /// Remove user stories from sprint
         /// </summary>
-        [HttpDelete("{id}/user-stories")]
+        [HttpDelete("{id}/UserStories")]
         [RequireRole(UserRole.Admin, UserRole.ScrumMaster)]
         public async Task<IActionResult> RemoveUserStoriesFromSprint(int id, [FromBody] RemoveUserStoriesFromSprintModel model)
         {

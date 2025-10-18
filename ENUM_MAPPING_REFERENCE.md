@@ -96,7 +96,7 @@ POST /api/sprints
 
 ### Creating a User Story
 ```json
-POST /api/user-stories
+POST /api/UserStories
 {
   "title": "User Story Title",
   "priority": 2,
