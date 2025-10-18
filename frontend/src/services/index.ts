@@ -2,9 +2,10 @@
 export { default as apiClient } from './apiClient';
 export { authService } from './authService';
 export { projectService } from './projectService';
+export { userStoryService } from './userStoryService';
+export { sprintService } from './sprintService';
+export { teamService } from './teamService';
 
 // Future services will be added here
-// export { sprintService } from './sprintService'
 // export { taskService } from './taskService'
-// export { teamService } from './teamService'
 // export { reportService } from './reportService'

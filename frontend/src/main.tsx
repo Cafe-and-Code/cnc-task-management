@@ -7,7 +7,7 @@ import { Toaster } from 'react-hot-toast';
 import { ErrorBoundary } from './components/ui/ErrorBoundary.tsx';
 import { ThemeProvider } from './components/layout/ThemeProvider.tsx';
 import App from './App.tsx';
-import { store } from './store/index.ts';
+import { store, getCurrentUser } from './store/store.ts';
 import './index.css';
 
 // Initialize theme from localStorage before rendering
@@ -15,7 +15,7 @@ const initializeTheme = () => {
   const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const theme = savedTheme || (prefersDark ? 'dark' : 'light');
-  
+
   const root = document.documentElement;
   if (theme === 'dark') {
     root.classList.add('dark');
@@ -26,8 +26,23 @@ const initializeTheme = () => {
   }
 };
 
-// Initialize theme immediately
+// Initialize authentication state if token exists
+const initializeAuth = () => {
+  const token = localStorage.getItem('token');
+  const tokenExpiry = localStorage.getItem('tokenExpiry');
+
+  // Check if we have a valid token
+  const isTokenValid = token && tokenExpiry ? parseInt(tokenExpiry) > Date.now() : !!token;
+
+  if (isTokenValid && token) {
+    // Dispatch getCurrentUser to hydrate user state
+    store.dispatch(getCurrentUser());
+  }
+};
+
+// Initialize theme and auth immediately
 initializeTheme();
+initializeAuth();
 
 // Create a client
 const queryClient = new QueryClient({

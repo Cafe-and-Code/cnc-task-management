@@ -19,7 +19,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     }
   }, [dispatch, token, isAuthenticated, isLoading]);
 
-  if (isLoading) {
+  // Show loading during authentication check
+  if (isLoading || (token && !isAuthenticated)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="lg" />

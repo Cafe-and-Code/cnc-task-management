@@ -15,17 +15,28 @@ interface AuthState {
   error: string | null;
 }
 
-const authInitialState: AuthState = {
-  user: null,
-  token: localStorage.getItem('token'),
-  refreshToken: localStorage.getItem('refreshToken'),
-  tokenExpiry: localStorage.getItem('tokenExpiry')
+const getInitialAuthState = (): AuthState => {
+  const token = localStorage.getItem('token');
+  const refreshToken = localStorage.getItem('refreshToken');
+  const tokenExpiry = localStorage.getItem('tokenExpiry')
     ? parseInt(localStorage.getItem('tokenExpiry')!)
-    : null,
-  isAuthenticated: false,
-  isLoading: false,
-  error: null,
+    : null;
+
+  // Check if token is still valid
+  const isTokenValid = token && tokenExpiry ? tokenExpiry > Date.now() : !!token;
+
+  return {
+    user: null,
+    token,
+    refreshToken,
+    tokenExpiry,
+    isAuthenticated: isTokenValid,
+    isLoading: false,
+    error: null,
+  };
 };
+
+const authInitialState: AuthState = getInitialAuthState();
 
 // Auth Async Thunks
 export const login = createAsyncThunk(

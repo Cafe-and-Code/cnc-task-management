@@ -16,9 +16,10 @@ import { ProjectFormPage } from './pages/projects/ProjectFormPage.tsx';
 import { LoadingSpinner } from './components/ui/LoadingSpinner.tsx';
 
 function App() {
-  const { isAuthenticated, isLoading } = useAppSelector(state => state.auth);
+  const { isAuthenticated, isLoading, token } = useAppSelector(state => state.auth);
 
-  if (isLoading) {
+  // Show loading during initial authentication check
+  if (isLoading || (token && !isAuthenticated)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingSpinner size="lg" />

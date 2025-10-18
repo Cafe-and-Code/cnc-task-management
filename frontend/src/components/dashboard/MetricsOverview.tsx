@@ -33,14 +33,14 @@ const MetricCard: React.FC<MetricCardProps> = ({
         <div>
           <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
           <p className={`text-2xl font-bold ${color}`}>{value}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{subtitle}</p>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{subtitle}</p>
         </div>
         <div className={`p-3 rounded-full ${color.replace('text-', 'bg-opacity-10 bg-')}`}>
           {icon}
         </div>
       </div>
       {trend && (
-        <div className="mt-4 flex items-center">
+        <div className="flex items-center mt-4">
           <svg
             className={`h-4 w-4 ${trend.isPositive ? 'text-green-500' : 'text-red-500'}`}
             fill="none"
@@ -104,7 +104,7 @@ export const MetricsOverview: React.FC = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
       {/* Projects Card */}
       <MetricCard
         title="Total Projects"
@@ -113,7 +113,7 @@ export const MetricsOverview: React.FC = () => {
         color="text-blue-600 dark:text-blue-400"
         icon={
           <svg
-            className="h-6 w-6 text-blue-600 dark:text-blue-400"
+            className="w-6 h-6 text-blue-600 dark:text-blue-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -138,7 +138,7 @@ export const MetricsOverview: React.FC = () => {
         color="text-orange-600 dark:text-orange-400"
         icon={
           <svg
-            className="h-6 w-6 text-orange-600 dark:text-orange-400"
+            className="w-6 h-6 text-orange-600 dark:text-orange-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -162,7 +162,7 @@ export const MetricsOverview: React.FC = () => {
         color="text-green-600 dark:text-green-400"
         icon={
           <svg
-            className="h-6 w-6 text-green-600 dark:text-green-400"
+            className="w-6 h-6 text-green-600 dark:text-green-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -188,7 +188,7 @@ export const MetricsOverview: React.FC = () => {
           color="text-purple-600 dark:text-purple-400"
           icon={
             <svg
-              className="h-6 w-6 text-purple-600 dark:text-purple-400"
+              className="w-6 h-6 text-purple-600 dark:text-purple-400"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
