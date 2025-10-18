@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { dashboardService } from '@services/dashboardService';
 
 interface Notification {
   id: string;
@@ -17,47 +16,12 @@ interface Notification {
 }
 
 export const NotificationCenter: React.FC = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [showAll, setShowAll] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [notifications] = useState<Notification[]>([]);
+  const [showAll] = useState(false);
+  const [isLoading] = useState(false);
 
-  useEffect(() => {
-    // Load real notifications from API
-    const loadNotifications = async () => {
-      setIsLoading(true);
-
-      try {
-        const notificationsData = await dashboardService.fetchNotifications();
-
-        // Transform API data to component format if needed
-        const transformedNotifications: Notification[] = notificationsData.map((notification: any) => ({
-          id: notification.id?.toString() || notification.notificationId?.toString() || '',
-          type: notification.type || 'info',
-          title: notification.title || notification.subject || '',
-          message: notification.message || notification.content || '',
-          timestamp: new Date(notification.timestamp || notification.createdAt || notification.date),
-          read: notification.read || notification.isRead || false,
-          link: notification.link || notification.actionUrl || '',
-          action: notification.action ? {
-            label: notification.action.label || notification.action.text || 'View',
-            onClick: notification.action.onClick || (() => console.log('Navigate to notification')),
-          } : undefined,
-        }));
-
-        setNotifications(
-          transformedNotifications.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-        );
-      } catch (error) {
-        console.error('Failed to load notifications:', error);
-        // If API fails, set empty array to show "No notifications" message
-        setNotifications([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadNotifications();
-  }, []);
+  // TODO: Connect to Redux state or backend API when available
+  // For now, show empty state by default
 
   const getNotificationIcon = (type: Notification['type']) => {
     switch (type) {
@@ -160,16 +124,9 @@ export const NotificationCenter: React.FC = () => {
     }
   };
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(notification =>
-        notification.id === id ? { ...notification, read: true } : notification
-      )
-    );
-  };
-
+  // TODO: Implement mark as read when API is available
   const markAllAsRead = () => {
-    setNotifications(prev => prev.map(notification => ({ ...notification, read: true })));
+    // Placeholder
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -198,7 +155,9 @@ export const NotificationCenter: React.FC = () => {
             )}
             {!showAll && notifications.length > 5 && (
               <button
-                onClick={() => setShowAll(true)}
+                onClick={() => {
+                  // TODO: Show all notifications
+                }}
                 className="text-xs text-brand-primary hover:text-brand-primary/80 font-medium"
               >
                 View all
@@ -275,7 +234,9 @@ export const NotificationCenter: React.FC = () => {
                     </div>
                     {!notification.read && (
                       <button
-                        onClick={() => markAsRead(notification.id)}
+                        onClick={() => {
+                          // TODO: Mark notification as read
+                        }}
                         className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                       >
                         Mark read
@@ -291,7 +252,9 @@ export const NotificationCenter: React.FC = () => {
         {showAll && notifications.length > 5 && (
           <div className="mt-4 text-center">
             <button
-              onClick={() => setShowAll(false)}
+              onClick={() => {
+                // TODO: Show fewer notifications
+              }}
               className="text-sm text-brand-primary hover:text-brand-primary/80 font-medium"
             >
               Show less

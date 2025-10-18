@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { dashboardService } from '@services/dashboardService';
 
 interface Deadline {
   id: string;
@@ -15,41 +14,11 @@ interface Deadline {
 }
 
 export const UpcomingDeadlines: React.FC = () => {
-  const [deadlines, setDeadlines] = useState<Deadline[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [deadlines] = useState<Deadline[]>([]);
+  const [isLoading] = useState(false);
 
-  useEffect(() => {
-    // Load real deadlines from API
-    const loadDeadlines = async () => {
-      setIsLoading(true);
-
-      try {
-        const deadlinesData = await dashboardService.fetchUpcomingDeadlines();
-
-        // Transform API data to component format if needed
-        const transformedDeadlines: Deadline[] = deadlinesData.map((deadline: any) => ({
-          id: deadline.id?.toString() || deadline.deadlineId?.toString() || '',
-          title: deadline.title || deadline.name || '',
-          type: deadline.type || 'task',
-          dueDate: new Date(deadline.dueDate || deadline.endDate || deadline.date),
-          priority: deadline.priority || 'medium',
-          status: deadline.status || 'upcoming',
-          projectName: deadline.projectName || deadline.project?.name || '',
-          assignee: deadline.assignee || deadline.assignedTo?.name || '',
-        }));
-
-        setDeadlines(transformedDeadlines.sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime()));
-      } catch (error) {
-        console.error('Failed to load deadlines:', error);
-        // If API fails, set empty array to show "No upcoming deadlines" message
-        setDeadlines([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadDeadlines();
-  }, []);
+  // TODO: Connect to Redux state or backend API when available
+  // For now, show empty state by default
 
   const getDaysUntil = (dueDate: Date) => {
     const now = new Date();

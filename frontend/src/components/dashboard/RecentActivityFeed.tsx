@@ -1,31 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { useAppSelector } from '../../hooks/redux';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { activityService, ActivityItem } from '../../services/activityService';
+import { ActivityItem } from '../../services/activityService';
 
 export const RecentActivityFeed: React.FC = () => {
-  const { projects } = useAppSelector(state => state.projects);
-  const [activities, setActivities] = useState<ActivityItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [activities] = useState<ActivityItem[]>([]);
+  const [isLoading] = useState(false);
 
-  useEffect(() => {
-    const loadRecentActivities = async () => {
-      setIsLoading(true);
-
-      try {
-        const response = await activityService.getRecentActivities({ limit: 10 });
-        setActivities(response.activities);
-      } catch (error: any) {
-        console.error('Failed to load recent activities:', error);
-        // If API fails, set empty array to show "No recent activity" message
-        setActivities([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadRecentActivities();
-  }, []);
+  // TODO: Connect to Redux state or backend API when available
+  // For now, show empty state by default
 
   const formatTimeAgo = (timestamp: number) => {
     const now = Date.now();
@@ -77,28 +59,6 @@ export const RecentActivityFeed: React.FC = () => {
             />
           </svg>
         );
-      case 'userstory':
-        return (
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
-        );
-      case 'user':
-        return (
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            />
-          </svg>
-        );
       case 'team':
         return (
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -132,8 +92,6 @@ export const RecentActivityFeed: React.FC = () => {
         return 'bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400';
       case 'sprint':
         return 'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400';
-      case 'userstory':
-        return 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/20 dark:text-indigo-400';
       case 'user':
         return 'bg-purple-100 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400';
       case 'team':

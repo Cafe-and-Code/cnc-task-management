@@ -60,14 +60,14 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
   const getNotificationIcon = (type: Notification['type']) => {
     switch (type) {
       case 'success':
-        return <div className="flex-shrink-0 w-2 h-2 rounded-full bg-green-400 mt-2"></div>;
+        return <div className="flex-shrink-0 w-2 h-2 mt-2 bg-green-400 rounded-full"></div>;
       case 'error':
-        return <div className="flex-shrink-0 w-2 h-2 rounded-full bg-red-400 mt-2"></div>;
+        return <div className="flex-shrink-0 w-2 h-2 mt-2 bg-red-400 rounded-full"></div>;
       case 'warning':
-        return <div className="flex-shrink-0 w-2 h-2 rounded-full bg-yellow-400 mt-2"></div>;
+        return <div className="flex-shrink-0 w-2 h-2 mt-2 bg-yellow-400 rounded-full"></div>;
       case 'info':
       default:
-        return <div className="flex-shrink-0 w-2 h-2 rounded-full bg-blue-400 mt-2"></div>;
+        return <div className="flex-shrink-0 w-2 h-2 mt-2 bg-blue-400 rounded-full"></div>;
     }
   };
 
@@ -93,7 +93,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
   return (
     <div
       ref={dropdownRef}
-      className="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-50 max-h-96 flex flex-col"
+      className="absolute right-0 top-full mt-2 z-50 flex flex-col bg-white rounded-lg shadow-lg w-96 dark:bg-gray-800 ring-1 ring-black ring-opacity-5 max-h-[calc(100vh-140px)] overflow-y-auto"
     >
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
@@ -110,7 +110,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
             onClick={onClose}
             className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
           >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -122,7 +122,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
         </div>
 
         {/* Filter tabs */}
-        <div className="flex items-center space-x-2 mt-2">
+        <div className="flex items-center mt-2 space-x-2">
           <button
             onClick={() => setFilter('all')}
             className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
@@ -149,7 +149,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
       {/* Notifications list */}
       <div className="flex-1 overflow-y-auto">
         {filteredNotifications.length === 0 ? (
-          <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
+          <div className="p-4 text-sm text-center text-gray-500 dark:text-gray-400">
             {filter === 'unread' ? 'No unread notifications' : 'No notifications'}
           </div>
         ) : (
@@ -170,14 +170,14 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
                         <p className="text-sm font-medium text-gray-900 dark:text-white">
                           {notification.title}
                         </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
                           {notification.message}
                         </p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                        <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
                           {formatTime(notification.timestamp)}
                         </p>
                       </div>
-                      <div className="flex items-center space-x-1 ml-2">
+                      <div className="flex items-center ml-2 space-x-1">
                         {!notification.read && (
                           <button
                             onClick={e => {
@@ -188,7 +188,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
                             title="Mark as read"
                           >
                             <svg
-                              className="h-4 w-4"
+                              className="w-4 h-4"
                               fill="none"
                               viewBox="0 0 24 24"
                               stroke="currentColor"
@@ -211,7 +211,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
                           title="Remove"
                         >
                           <svg
-                            className="h-4 w-4"
+                            className="w-4 h-4"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -240,13 +240,13 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
           <div className="flex items-center justify-between">
             <button
               onClick={handleMarkAllAsRead}
-              className="text-sm text-brand-primary hover:text-brand-primary/80 font-medium"
+              className="text-sm font-medium text-brand-primary hover:text-brand-primary/80"
             >
               Mark all as read
             </button>
             <button
               onClick={handleClearAll}
-              className="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 font-medium"
+              className="text-sm font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
             >
               Clear all
             </button>
@@ -265,9 +265,9 @@ export const NotificationBell: React.FC<{ onClick: () => void; unreadCount: numb
   return (
     <button
       onClick={onClick}
-      className="relative p-2 rounded-full text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:text-gray-300 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-primary"
+      className="relative p-2 text-gray-400 rounded-full hover:text-gray-500 hover:bg-gray-100 dark:hover:text-gray-300 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-primary"
     >
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -276,10 +276,10 @@ export const NotificationBell: React.FC<{ onClick: () => void; unreadCount: numb
         />
       </svg>
       {unreadCount > 0 && (
-        <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-400 ring-2 ring-white dark:ring-gray-800"></span>
+        <span className="absolute top-0 right-0 block w-2 h-2 bg-red-400 rounded-full ring-2 ring-white dark:ring-gray-800"></span>
       )}
       {unreadCount > 9 && (
-        <span className="absolute top-0 right-0 block h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center ring-2 ring-white dark:ring-gray-800">
+        <span className="absolute top-0 right-0 flex items-center justify-center block w-5 h-5 text-xs text-white bg-red-500 rounded-full ring-2 ring-white dark:ring-gray-800">
           {unreadCount > 99 ? '99+' : unreadCount}
         </span>
       )}
