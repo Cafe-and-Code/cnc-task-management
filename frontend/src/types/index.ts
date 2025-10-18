@@ -16,11 +16,11 @@ export interface User {
 }
 
 export enum UserRole {
-  Admin = 'Admin',
-  ProductOwner = 'ProductOwner',
-  ScrumMaster = 'ScrumMaster',
-  Developer = 'Developer',
-  Stakeholder = 'Stakeholder',
+  Admin = 0,
+  ProductOwner = 1,
+  ScrumMaster = 2,
+  Developer = 3,
+  Stakeholder = 4,
 }
 
 // Project types
@@ -46,10 +46,10 @@ export interface Project {
 }
 
 export enum ProjectStatus {
-  Active = 'Active',
-  OnHold = 'OnHold',
-  Completed = 'Completed',
-  Archived = 'Archived',
+  Active = 0,
+  OnHold = 1,
+  Completed = 2,
+  Archived = 3,
 }
 
 // Team types
@@ -105,10 +105,10 @@ export interface Sprint {
 }
 
 export enum SprintStatus {
-  Planning = 'Planning',
-  Active = 'Active',
-  Completed = 'Completed',
-  Cancelled = 'Cancelled',
+  Planned = 0,
+  Active = 1,
+  Completed = 2,
+  Cancelled = 3,
 }
 
 export interface BurndownData {
@@ -142,20 +142,20 @@ export interface UserStory {
 }
 
 export enum UserStoryPriority {
-  Low = 0,
-  Medium = 5,
-  High = 8,
-  Critical = 10,
+  Lowest = 0,
+  Low = 1,
+  Medium = 2,
+  High = 3,
+  Highest = 4,
 }
 
 export enum UserStoryStatus {
-  Backlog = 'Backlog',
-  Refinement = 'Refinement',
-  Ready = 'Ready',
-  InProgress = 'InProgress',
-  Testing = 'Testing',
-  Done = 'Done',
-  Rejected = 'Rejected',
+  Backlog = 0,
+  Ready = 1,
+  InProgress = 2,
+  Testing = 3,
+  Completed = 4,
+  Blocked = 5,
 }
 
 // Task types
@@ -184,12 +184,11 @@ export interface Task {
 }
 
 export enum TaskStatus {
-  ToDo = 'ToDo',
-  InProgress = 'InProgress',
-  InReview = 'InReview',
-  Testing = 'Testing',
-  Done = 'Done',
-  Blocked = 'Blocked',
+  ToDo = 0,
+  InProgress = 1,
+  Testing = 2,
+  Completed = 3,
+  Blocked = 4,
 }
 
 export enum TaskType {
