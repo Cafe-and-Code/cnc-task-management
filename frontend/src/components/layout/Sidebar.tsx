@@ -32,7 +32,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       name: 'Dashboard',
       href: '/dashboard',
       icon: (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -47,7 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       name: 'Projects',
       href: '/projects',
       icon: (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -64,7 +64,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       name: 'Sprints',
       href: '/sprints',
       icon: (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -80,7 +80,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       name: 'Kanban Board',
       href: '/kanban',
       icon: (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -96,7 +96,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       name: 'Reports',
       href: '/reports',
       icon: (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -115,7 +115,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       name: 'Teams',
       href: '/teams',
       icon: (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -134,7 +134,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       name: 'Admin',
       href: '/admin',
       icon: (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -168,9 +168,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center">
           <Link to="/dashboard" className="flex items-center">
-            <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">CNC</span>
-            </div>
+            {/* <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-brand-primary">
+              <span className="text-sm font-bold text-white">CNC</span>
+            </div> */}
             {!isCollapsed && (
               <span className="ml-2 text-lg font-semibold text-gray-900 dark:text-white">
                 Task Management
@@ -181,9 +181,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
 
         <button
           onClick={onToggle}
-          className="p-1 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:text-gray-300 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-primary"
+          className="p-1 text-gray-400 rounded-md hover:text-gray-500 hover:bg-gray-100 dark:hover:text-gray-300 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-primary"
         >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -199,9 +199,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
         <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center space-x-3">
             {user.avatarUrl ? (
-              <img className="h-8 w-8 rounded-full" src={user.avatarUrl} alt="Profile" />
+              <img className="w-8 h-8 rounded-full" src={user.avatarUrl} alt="Profile" />
             ) : (
-              <div className="h-8 w-8 rounded-full bg-brand-primary flex items-center justify-center">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-brand-primary">
                 <span className="text-sm font-medium text-white">
                   {user.firstName?.charAt(0)}
                   {user.lastName?.charAt(0)}
@@ -209,10 +209,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+              <p className="text-sm font-medium text-gray-900 truncate dark:text-white">
                 {user.firstName} {user.lastName}
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.role}</p>
+              <p className="text-xs text-gray-500 truncate dark:text-gray-400">{user.role}</p>
             </div>
           </div>
         </div>
@@ -259,7 +259,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
         {filteredTeamNavigation.length > 0 && (
           <>
             <div className="pt-4 pb-2">
-              <div className="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <div className="px-3 text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                 {!isCollapsed && 'Team'}
               </div>
             </div>
@@ -288,7 +288,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
         {filteredAdminNavigation.length > 0 && (
           <>
             <div className="pt-4 pb-2">
-              <div className="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <div className="px-3 text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                 {!isCollapsed && 'Administration'}
               </div>
             </div>
@@ -315,14 +315,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       </nav>
 
       {/* Quick actions */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="p-4 bg-white border-t border-gray-200 dark:border-gray-700 dark:bg-gray-800">
         <button
-          className={`w-full flex items-center justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-brand-primary hover:bg-brand-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary transition-all duration-200 ${
-            isCollapsed ? 'px-3 py-2' : 'px-4 py-3'
-          }`}
+          onClick={() => navigate('/projects/new')}
+          className="w-full flex items-center justify-center px-4 py-2.5 text-sm font-medium rounded-lg text-white bg-brand-primary hover:bg-brand-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary dark:focus:ring-offset-gray-800 transition-all duration-200 shadow-sm hover:shadow-md"
+          title="Create a new project"
         >
           <svg
-            className="h-4 w-4 mr-2 flex-shrink-0"
+            className="flex-shrink-0 w-4 h-4 mr-2"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
