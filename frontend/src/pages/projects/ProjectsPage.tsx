@@ -60,7 +60,59 @@ export const ProjectsPage: React.FC = () => {
   };
 
   const getProjectProgress = (project: any) => {
-    return Math.floor(Math.random() * 100);
+    // If project is completed, return 100%
+    if (project.status === ProjectStatus.Completed) {
+      return 100;
+    }
+
+    // If project is archived, return 100%
+    if (project.status === ProjectStatus.Archived) {
+      return 100;
+    }
+
+    // If project is on hold, return current progress without calculation
+    if (project.status === ProjectStatus.OnHold) {
+      // Calculate based on time elapsed but cap at reasonable percentage
+      return calculateTimeBasedProgress(project);
+    }
+
+    // For active projects, calculate progress based on timeline
+    if (project.status === ProjectStatus.Active) {
+      return calculateTimeBasedProgress(project);
+    }
+
+    // Default fallback
+    return 0;
+  };
+
+  const calculateTimeBasedProgress = (project: any) => {
+    if (!project.startDate) {
+      return 0; // No start date, no progress
+    }
+
+    const start = new Date(project.startDate);
+    const now = new Date();
+    const end = project.endDate ? new Date(project.endDate) : now;
+
+    // If project hasn't started yet
+    if (now < start) {
+      return 0;
+    }
+
+    // Calculate total duration and elapsed time
+    const totalDuration = end.getTime() - start.getTime();
+    const elapsedTime = now.getTime() - start.getTime();
+
+    // Calculate progress percentage
+    let progress = Math.round((elapsedTime / totalDuration) * 100);
+
+    // Cap progress at 95% for active projects (shows they're not quite done)
+    if (project.status === ProjectStatus.Active && progress > 95) {
+      progress = 95;
+    }
+
+    // Ensure progress doesn't exceed 100%
+    return Math.min(Math.max(progress, 0), 100);
   };
 
   const formatDuration = (startDate?: string, endDate?: string) => {
