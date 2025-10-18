@@ -1,0 +1,366 @@
+/* Accessibility styles for Kanban board */
+
+/* High contrast mode */
+.high-contrast {
+  --bg-primary: #000000;
+  --bg-secondary: #ffffff;
+  --text-primary: #ffffff;
+  --text-secondary: #000000;
+  --border-color: #ffffff;
+  --accent-color: #ffff00;
+}
+
+.high-contrast .bg-white {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+.high-contrast .bg-gray-50,
+.high-contrast .bg-gray-100 {
+  background-color: var(--bg-secondary) !important;
+  border: 2px solid var(--border-color) !important;
+}
+
+.high-contrast .text-gray-900,
+.high-contrast .text-gray-800,
+.high-contrast .text-gray-700 {
+  color: var(--text-primary) !important;
+}
+
+.high-contrast .text-gray-600,
+.high-contrast .text-gray-500,
+.high-contrast .text-gray-400 {
+  color: var(--text-secondary) !important;
+}
+
+.high-contrast .border-gray-200,
+.high-contrast .border-gray-300 {
+  border-color: var(--border-color) !important;
+}
+
+.high-contrast .bg-blue-600,
+.high-contrast .bg-blue-500 {
+  background-color: var(--accent-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Reduced motion */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+.reduce-motion .transform {
+  transition: none !important;
+}
+
+.reduce-motion .transition-all {
+  transition: none !important;
+}
+
+.reduce-motion .transition-colors {
+  transition: none !important;
+}
+
+.reduce-motion .hover\:scale-105:hover {
+  transform: none !important;
+}
+
+/* Large text */
+.large-text {
+  font-size: 120% !important;
+  line-height: 1.6 !important;
+}
+
+.large-text .text-xs {
+  font-size: 0.875rem !important;
+}
+
+.large-text .text-sm {
+  font-size: 1rem !important;
+}
+
+.large-text .text-base {
+  font-size: 1.125rem !important;
+}
+
+.large-text .text-lg {
+  font-size: 1.25rem !important;
+}
+
+.large-text .text-xl {
+  font-size: 1.5rem !important;
+}
+
+.large-text .text-2xl {
+  font-size: 1.75rem !important;
+}
+
+.large-text h1,
+.large-text h2,
+.large-text h3,
+.large-text h4,
+.large-text h5,
+.large-text h6 {
+  font-size: 1.5em !important;
+  margin: 1.5em 0 0.75em 0 !important;
+}
+
+.large-text button,
+.large-text .btn {
+  font-size: 1.125rem !important;
+  padding: 0.75rem 1.5rem !important;
+}
+
+.large-text input,
+.large-text textarea,
+.large-text select {
+  font-size: 1rem !important;
+  padding: 0.75rem !important;
+}
+
+/* Focus visible */
+.focus-visible *:focus {
+  outline: 3px solid #2563eb !important;
+  outline-offset: 2px !important;
+  border-radius: 4px !important;
+}
+
+.focus-visible button:focus,
+.focus-visible input:focus,
+.focus-visible textarea:focus,
+.focus-visible select:focus,
+.focus-visible a:focus {
+  outline: 3px solid #2563eb !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2) !important;
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Skip to main content link */
+.skip-to-main {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #2563eb;
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 1000;
+  transition: top 0.3s;
+}
+
+.skip-to-main:focus {
+  top: 6px;
+}
+
+/* High contrast mode specific adjustments */
+@media (prefers-contrast: high) {
+  .kanban-board {
+    border: 2px solid #000000 !important;
+  }
+
+  .task-card {
+    border: 2px solid #000000 !important;
+  }
+
+  .column {
+    border: 2px solid #000000 !important;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .kanban-board * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Color blindness adjustments */
+.colorblind-friendly {
+  --priority-critical: #ff6b35;
+  --priority-high: #f7931e;
+  --priority-medium: #ffd23f;
+  --priority-low: #06ffa5;
+}
+
+.colorblind-friendly .bg-red-500 {
+  background-color: var(--priority-critical) !important;
+}
+
+.colorblind-friendly .bg-orange-500 {
+  background-color: var(--priority-high) !important;
+}
+
+.colorblind-friendly .bg-yellow-500 {
+  background-color: var(--priority-medium) !important;
+}
+
+.colorblind-friendly .bg-green-500 {
+  background-color: var(--priority-low) !important;
+}
+
+/* Dark mode adjustments for accessibility */
+@media (prefers-color-scheme: dark) {
+  .high-contrast {
+    --bg-primary: #ffffff;
+    --bg-secondary: #000000;
+    --text-primary: #000000;
+    --text-secondary: #ffffff;
+    --border-color: #000000;
+    --accent-color: #ffff00;
+  }
+}
+
+/* Mobile accessibility adjustments */
+@media (max-width: 768px) {
+  .large-text {
+    font-size: 110% !important;
+  }
+
+  .focus-visible *:focus {
+    outline-width: 4px !important;
+    outline-offset: 3px !important;
+  }
+
+  .keyboard-shortcuts-help {
+    font-size: 16px !important; /* Prevent zoom on iOS */
+  }
+}
+
+/* Print accessibility */
+@media print {
+  .sr-only-print {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    padding: inherit !important;
+    margin: inherit !important;
+    overflow: visible !important;
+    clip: auto !important;
+    white-space: normal !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Touch device accessibility */
+@media (hover: none) and (pointer: coarse) {
+  .touch-target {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+
+  .touch-target button,
+  .touch-target a,
+  .touch-target input {
+    min-height: 44px !important;
+    min-width: 44px !important;
+    padding: 12px !important;
+  }
+}
+
+/* Voice control indicators */
+.voice-control-active {
+  border: 3px solid #10b981 !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5) !important;
+}
+
+/* Error states for accessibility */
+.error-accessible {
+  color: #dc2626 !important;
+  background-color: #fef2f2 !important;
+  border: 2px solid #dc2626 !important;
+  padding: 8px 12px !important;
+  border-radius: 4px !important;
+}
+
+.dark .error-accessible {
+  background-color: #7f1d1d !important;
+  color: #fca5a5 !important;
+}
+
+/* Success states for accessibility */
+.success-accessible {
+  color: #059669 !important;
+  background-color: #ecfdf5 !important;
+  border: 2px solid #059669 !important;
+  padding: 8px 12px !important;
+  border-radius: 4px !important;
+}
+
+.dark .success-accessible {
+  background-color: #064e3b !important;
+  color: #6ee7b7 !important;
+}
+
+/* Warning states for accessibility */
+.warning-accessible {
+  color: #d97706 !important;
+  background-color: #fffbeb !important;
+  border: 2px solid #d97706 !important;
+  padding: 8px 12px !important;
+  border-radius: 4px !important;
+}
+
+.dark .warning-accessible {
+  background-color: #78350f !important;
+  color: #fcd34d !important;
+}
+
+/* Loading states for accessibility */
+.loading-accessible {
+  position: relative;
+}
+
+.loading-accessible::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 10;
+}
+
+.loading-accessible::after {
+  content: 'Loading...';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 11;
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.dark .loading-accessible::before {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.dark .loading-accessible::after {
+  color: #d1d5db;
+}

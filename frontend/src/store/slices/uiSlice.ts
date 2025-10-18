@@ -1,105 +1,119 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-// Types
-export interface UIState {
-  sidebarOpen: boolean;
-  theme: 'light' | 'dark' | 'system';
-  language: string;
-  loading: boolean;
-  notifications: Array<{
-    id: string;
-    type: 'success' | 'error' | 'warning' | 'info';
-    title: string;
-    message?: string;
-    duration?: number;
-  }>;
-  modals: {
-    createProject: boolean;
-    createSprint: boolean;
-    createUserStory: boolean;
-    createTask: boolean;
-    editProfile: boolean;
-  };
+interface UIState {
+  theme: 'light' | 'dark';
+  sidebarCollapsed: boolean;
+  isMobileMenuOpen: boolean;
+  notifications: Notification[];
+  breadcrumbs: BreadcrumbItem[];
+  loading: Record<string, boolean>;
+}
+
+interface Notification {
+  id: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  title: string;
+  message: string;
+  timestamp: number;
+  read: boolean;
+}
+
+interface BreadcrumbItem {
+  label: string;
+  path?: string;
 }
 
 const initialState: UIState = {
-  sidebarOpen: true,
-  theme: 'system',
-  language: 'en',
-  loading: false,
+  theme: (localStorage.getItem('theme') as 'light' | 'dark') || 'light',
+  sidebarCollapsed: false,
+  isMobileMenuOpen: false,
   notifications: [],
-  modals: {
-    createProject: false,
-    createSprint: false,
-    createUserStory: false,
-    createTask: false,
-    editProfile: false,
-  },
+  breadcrumbs: [],
+  loading: {},
 };
 
-// Slice
 const uiSlice = createSlice({
   name: 'ui',
   initialState,
   reducers: {
-    toggleSidebar: (state) => {
-      state.sidebarOpen = !state.sidebarOpen;
+    toggleTheme: state => {
+      state.theme = state.theme === 'light' ? 'dark' : 'light';
+      localStorage.setItem('theme', state.theme);
     },
-    setSidebarOpen: (state, action: PayloadAction<boolean>) => {
-      state.sidebarOpen = action.payload;
-    },
-    setTheme: (state, action: PayloadAction<'light' | 'dark' | 'system'>) => {
+    setTheme: (state, action: PayloadAction<'light' | 'dark'>) => {
       state.theme = action.payload;
+      localStorage.setItem('theme', action.payload);
     },
-    setLanguage: (state, action: PayloadAction<string>) => {
-      state.language = action.payload;
+    toggleSidebar: state => {
+      state.sidebarCollapsed = !state.sidebarCollapsed;
     },
-    setLoading: (state, action: PayloadAction<boolean>) => {
-      state.loading = action.payload;
+    setSidebarCollapsed: (state, action: PayloadAction<boolean>) => {
+      state.sidebarCollapsed = action.payload;
     },
-    addNotification: (state, action: PayloadAction<{
-      id: string;
-      type: 'success' | 'error' | 'warning' | 'info';
-      title: string;
-      message?: string;
-      duration?: number;
-    }>) => {
-      state.notifications.push(action.payload);
+    toggleMobileMenu: state => {
+      state.isMobileMenuOpen = !state.isMobileMenuOpen;
+    },
+    setMobileMenuOpen: (state, action: PayloadAction<boolean>) => {
+      state.isMobileMenuOpen = action.payload;
+    },
+    addNotification: (
+      state,
+      action: PayloadAction<Omit<Notification, 'id' | 'timestamp' | 'read'>>
+    ) => {
+      const notification: Notification = {
+        ...action.payload,
+        id: Date.now().toString(),
+        timestamp: Date.now(),
+        read: false,
+      };
+      state.notifications.unshift(notification);
+      // Keep only last 50 notifications
+      if (state.notifications.length > 50) {
+        state.notifications = state.notifications.slice(0, 50);
+      }
+    },
+    markNotificationRead: (state, action: PayloadAction<string>) => {
+      const notification = state.notifications.find(n => n.id === action.payload);
+      if (notification) {
+        notification.read = true;
+      }
+    },
+    markAllNotificationsRead: state => {
+      state.notifications.forEach(n => (n.read = true));
     },
     removeNotification: (state, action: PayloadAction<string>) => {
-      state.notifications = state.notifications.filter(
-        notification => notification.id !== action.payload
-      );
+      state.notifications = state.notifications.filter(n => n.id !== action.payload);
     },
-    clearNotifications: (state) => {
+    clearNotifications: state => {
       state.notifications = [];
     },
-    openModal: (state, action: PayloadAction<keyof UIState['modals']>) => {
-      state.modals[action.payload] = true;
+    setBreadcrumbs: (state, action: PayloadAction<BreadcrumbItem[]>) => {
+      state.breadcrumbs = action.payload;
     },
-    closeModal: (state, action: PayloadAction<keyof UIState['modals']>) => {
-      state.modals[action.payload] = false;
+    setLoading: (state, action: PayloadAction<{ key: string; loading: boolean }>) => {
+      state.loading[action.payload.key] = action.payload.loading;
     },
-    closeAllModals: (state) => {
-      Object.keys(state.modals).forEach(key => {
-        state.modals[key as keyof UIState['modals']] = false;
-      });
+    clearLoading: (state, action: PayloadAction<string>) => {
+      delete state.loading[action.payload];
     },
   },
 });
 
 export const {
-  toggleSidebar,
-  setSidebarOpen,
+  toggleTheme,
   setTheme,
-  setLanguage,
-  setLoading,
+  toggleSidebar,
+  setSidebarCollapsed,
+  toggleMobileMenu,
+  setMobileMenuOpen,
   addNotification,
+  markNotificationRead,
+  markAllNotificationsRead,
   removeNotification,
   clearNotifications,
-  openModal,
-  closeModal,
-  closeAllModals,
+  setBreadcrumbs,
+  setLoading,
+  clearLoading,
 } = uiSlice.actions;
 
-export default uiSlice.reducer;
+export default uiSlice;

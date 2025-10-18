@@ -1,31 +1,35 @@
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
+import React, { useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../../hooks/redux';
+import { getCurrentUser } from '../../store/store';
+import { LoadingSpinner } from '../ui/LoadingSpinner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useSelector((state: RootState) => state.auth);
-  const location = useLocation();
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  const dispatch = useAppDispatch();
+  const { isAuthenticated, token, isLoading } = useAppSelector(state => state.auth);
 
-  // Show loading spinner while checking authentication
+  useEffect(() => {
+    // If we have a token but no user data, try to get current user
+    if (token && !isAuthenticated && !isLoading) {
+      dispatch(getCurrentUser());
+    }
+  }, [dispatch, token, isAuthenticated, isLoading]);
+
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="loading-spinner w-8 h-8"></div>
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
 
-  // Redirect to login if not authenticated
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/auth/login" replace />;
   }
 
   return <>{children}</>;
 };
-
-export default ProtectedRoute;

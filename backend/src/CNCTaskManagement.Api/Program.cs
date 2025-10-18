@@ -149,6 +149,6 @@ using (var scope = app.Services.CreateScope())
 // Configure to listen on all interfaces
 app.Urls.Clear();
 //app.Urls.Add("http://0.0.0.0:8080");
-app.Urls.Add("https://localhost:5001");
+app.Urls.Add("http://localhost:5000");
 
 app.Run();

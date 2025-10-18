@@ -1,35 +1,26 @@
-// User types
+// User and Authentication types
 export interface User {
   id: number;
   email: string;
+  userName: string;
   firstName: string;
   lastName: string;
   role: UserRole;
+  organizationId: number;
+  organizationName?: string;
   avatarUrl?: string;
   isActive: boolean;
-  organizationId: number;
+  isEmailVerified: boolean;
+  lastLoginAt?: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 export enum UserRole {
   Admin = 'Admin',
-  ProjectManager = 'ProjectManager',
+  ProductOwner = 'ProductOwner',
   ScrumMaster = 'ScrumMaster',
   Developer = 'Developer',
-  Designer = 'Designer',
-  Tester = 'Tester'
-}
-
-// Organization types
-export interface Organization {
-  id: number;
-  name: string;
-  description?: string;
-  logoUrl?: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  Stakeholder = 'Stakeholder',
 }
 
 // Project types
@@ -37,111 +28,157 @@ export interface Project {
   id: number;
   name: string;
   description?: string;
+  productOwnerId?: number;
+  scrumMasterId?: number;
   status: ProjectStatus;
   startDate?: string;
   endDate?: string;
-  productOwnerId?: number;
-  scrumMasterId?: number;
-  organizationId: number;
+  velocityGoal: number;
+  sprintDuration: number;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  productOwner?: User;
+  scrumMaster?: User;
+  teams?: Team[];
+  teamCount?: number;
+  activeSprintCount?: number;
 }
 
 export enum ProjectStatus {
-  NotStarted = 'NotStarted',
-  InProgress = 'InProgress',
+  Active = 'Active',
   OnHold = 'OnHold',
   Completed = 'Completed',
-  Cancelled = 'Cancelled'
+  Archived = 'Archived',
 }
 
 // Team types
 export interface Team {
   id: number;
+  projectId?: number;
   name: string;
   description?: string;
-  projectId?: number;
-  organizationId: number;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  memberCount?: number;
+  members?: TeamMember[];
 }
 
 export interface TeamMember {
   id: number;
   teamId: number;
   userId: number;
+  user: User;
   role: TeamRole;
-  createdAt: string;
-  updatedAt: string;
+  joinedAt: string;
+  leftAt?: string;
+  isActive: boolean;
 }
 
 export enum TeamRole {
-  Member = 'Member',
-  Lead = 'Lead'
+  ProductOwner = 'ProductOwner',
+  ScrumMaster = 'ScrumMaster',
+  Developer = 'Developer',
+  Tester = 'Tester',
+  Designer = 'Designer',
 }
 
 // Sprint types
 export interface Sprint {
   id: number;
-  name: string;
-  sprintNumber: number;
-  startDate: string;
-  endDate: string;
-  status: SprintStatus;
-  velocityGoal?: number;
-  velocityActual?: number;
   projectId: number;
+  name: string;
+  goal?: string;
+  startDate?: string;
+  endDate?: string;
+  status: SprintStatus;
+  capacity: number;
+  velocity: number;
+  storyCount?: number;
+  taskCount?: number;
+  completedTasks?: number;
+  remainingTasks?: number;
+  burndownData?: BurndownData[];
   createdAt: string;
   updatedAt: string;
 }
 
 export enum SprintStatus {
-  Planned = 'Planned',
+  Planning = 'Planning',
   Active = 'Active',
   Completed = 'Completed',
-  Cancelled = 'Cancelled'
+  Cancelled = 'Cancelled',
+}
+
+export interface BurndownData {
+  date: string;
+  ideal: number;
+  actual: number;
 }
 
 // User Story types
 export interface UserStory {
   id: number;
+  projectId: number;
   title: string;
   description?: string;
-  status: UserStoryStatus;
-  priority: Priority;
-  storyPoints: number;
   acceptanceCriteria?: string;
-  assignedToUserId?: number;
-  createdByUserId?: number;
-  sprintId?: number;
-  projectId: number;
+  storyPoints: number;
+  priority: UserStoryPriority;
+  status: UserStoryStatus;
+  businessValue: number;
+  estimatedHours?: number;
+  actualHours: number;
+  assignee?: User;
+  reporter: User;
+  sprint?: Sprint;
+  taskCount?: number;
+  completedTasks?: number;
+  comments?: Comment[];
+  attachments?: Attachment[];
   createdAt: string;
   updatedAt: string;
 }
 
+export enum UserStoryPriority {
+  Low = 0,
+  Medium = 5,
+  High = 8,
+  Critical = 10,
+}
+
 export enum UserStoryStatus {
   Backlog = 'Backlog',
+  Refinement = 'Refinement',
   Ready = 'Ready',
   InProgress = 'InProgress',
   Testing = 'Testing',
-  Completed = 'Completed',
-  Blocked = 'Blocked'
+  Done = 'Done',
+  Rejected = 'Rejected',
 }
 
 // Task types
 export interface Task {
   id: number;
+  userStoryId: number;
   title: string;
   description?: string;
   status: TaskStatus;
-  priority: Priority;
-  estimatedHours: number;
+  type: TaskType;
+  assignee?: User;
+  reporter: User;
+  userStory: UserStory;
+  estimatedHours?: number;
   actualHours: number;
-  remainingHours: number;
+  remainingHours?: number;
+  parentTaskId?: number;
+  subtasks?: Task[];
+  orderIndex: number;
   dueDate?: string;
-  assignedToUserId?: number;
-  createdByUserId?: number;
-  userStoryId: number;
+  completedAt?: string;
+  comments?: Comment[];
+  attachments?: Attachment[];
   createdAt: string;
   updatedAt: string;
 }
@@ -149,249 +186,143 @@ export interface Task {
 export enum TaskStatus {
   ToDo = 'ToDo',
   InProgress = 'InProgress',
+  InReview = 'InReview',
   Testing = 'Testing',
-  Completed = 'Completed',
-  Blocked = 'Blocked'
+  Done = 'Done',
+  Blocked = 'Blocked',
 }
 
-export enum Priority {
-  Low = 'Low',
-  Medium = 'Medium',
-  High = 'High',
-  Critical = 'Critical'
+export enum TaskType {
+  Development = 'Development',
+  Testing = 'Testing',
+  Documentation = 'Documentation',
+  Research = 'Research',
+  Design = 'Design',
+  Meeting = 'Meeting',
 }
 
-// Notification types
-export interface Notification {
+// Comment and Attachment types
+export interface Comment {
   id: number;
-  title: string;
-  message: string;
-  type: NotificationType;
-  isRead: boolean;
-  userId: number;
-  organizationId: number;
-  projectId?: number;
-  sprintId?: number;
-  userStoryId?: number;
-  taskId?: number;
-  createdAt: string;
-}
-
-export enum NotificationType {
-  Info = 'Info',
-  Success = 'Success',
-  Warning = 'Warning',
-  Error = 'Error',
-  TaskAssigned = 'TaskAssigned',
-  UserStoryAssigned = 'UserStoryAssigned',
-  SprintStarted = 'SprintStarted',
-  SprintCompleted = 'SprintCompleted',
-  ProjectCreated = 'ProjectCreated',
-  ProjectUpdated = 'ProjectUpdated'
-}
-
-// Activity types
-export interface Activity {
-  id: number;
-  action: string;
   entityType: string;
   entityId: number;
-  details?: string;
-  userId: number;
-  organizationId: number;
-  projectId?: number;
-  sprintId?: number;
-  userStoryId?: number;
+  content: string;
+  author: User;
+  parentCommentId?: number;
+  isEdited: boolean;
   createdAt: string;
+  updatedAt: string;
+}
+
+export interface Attachment {
+  id: number;
+  entityType: string;
+  entityId: number;
+  fileName: string;
+  originalFileName: string;
+  fileSize: number;
+  contentType?: string;
+  uploadedBy: User;
+  uploadedAt: string;
+}
+
+// API Response types
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message: string;
+  timestamp: string;
+}
+
+export interface ApiError {
+  success: false;
+  error: {
+    code: string;
+    message: string;
+    details?: any;
+  };
+  timestamp: string;
+}
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  pagination: PaginationState;
+}
+
+export interface PaginationState {
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+// Form types
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface RegisterData {
+  email: string;
+  userName: string;
+  firstName: string;
+  lastName: string;
+  password: string;
+  organizationId?: number;
+  role: UserRole;
+}
+
+export interface UpdateProfileData {
+  firstName?: string;
+  lastName?: string;
+  avatarUrl?: string;
+}
+
+// UI State types
+export interface BreadcrumbItem {
+  label: string;
+  path?: string;
+}
+
+export interface Notification {
+  id: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  title: string;
+  message: string;
+  timestamp: number;
+  read: boolean;
 }
 
 // Chart types
 export interface ChartData {
   labels: string[];
-  datasets: ChartDataset[];
-}
-
-export interface ChartDataset {
-  label: string;
-  data: number[];
-  backgroundColor?: string | string[];
-  borderColor?: string | string[];
-  borderWidth?: number;
-  fill?: boolean;
-}
-
-// API Response types
-export interface ApiResponse<T = any> {
-  success: boolean;
-  message: string;
-  data?: T;
-  errors?: string[];
-}
-
-export interface PaginatedResponse<T = any> {
-  data: T[];
-  pagination: {
-    page: number;
-    pageSize: number;
-    totalCount: number;
-    totalPages: number;
-  };
-}
-
-// Authentication types
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  token: string;
-  refreshToken: string;
-  user: User;
-}
-
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  organizationName: string;
-}
-
-// Form types
-export interface FormErrors {
-  [key: string]: string | undefined;
-}
-
-// Filter types
-export interface FilterOptions {
-  search?: string;
-  status?: string | string[];
-  priority?: string | string[];
-  assignedTo?: number;
-  dateRange?: {
-    start: string;
-    end: string;
-  };
-}
-
-// GitHub types
-export interface GitHubRepository {
-  id: number;
-  name: string;
-  fullName: string;
-  description?: string;
-  htmlUrl: string;
-  private: boolean;
-  fork: boolean;
-  language?: string;
-  stargazersCount: number;
-  forksCount: number;
-  createdAt: string;
-  updatedAt: string;
-  owner: {
-    login: string;
-    avatarUrl: string;
-    htmlUrl: string;
-  };
-}
-
-export interface GitHubBranch {
-  name: string;
-  protected: boolean;
-  commit: {
-    sha: string;
-    url: string;
-  };
-}
-
-export interface GitHubCommit {
-  sha: string;
-  message: string;
-  url: string;
-  author: {
-    name: string;
-    email: string;
-    date: string;
-  };
-  committer: {
-    name: string;
-    email: string;
-    date: string;
-  };
-}
-
-export interface GitHubPullRequest {
-  id: number;
-  number: number;
-  title: string;
-  body?: string;
-  state: string;
-  htmlUrl: string;
-  createdAt: string;
-  updatedAt: string;
-  user: {
-    login: string;
-    avatarUrl: string;
-    htmlUrl: string;
-  };
-  head: {
-    ref: string;
-    sha: string;
-    repo: {
-      name: string;
-      fullName: string;
-      owner: {
-        login: string;
-        avatarUrl: string;
-      };
-    };
-  };
-  base: {
-    ref: string;
-    sha: string;
-    repo: {
-      name: string;
-      fullName: string;
-      owner: {
-        login: string;
-        avatarUrl: string;
-      };
-    };
-  };
-}
-
-export interface GitHubIssue {
-  id: number;
-  number: number;
-  title: string;
-  body?: string;
-  state: string;
-  htmlUrl: string;
-  createdAt: string;
-  updatedAt: string;
-  user: {
-    login: string;
-    avatarUrl: string;
-    htmlUrl: string;
-  };
-  labels: {
-    id: number;
-    name: string;
-    color: string;
-    description?: string;
+  datasets: {
+    label: string;
+    data: number[];
+    backgroundColor?: string;
+    borderColor?: string;
+    borderWidth?: number;
   }[];
 }
 
-// UI State types
-export interface LoadingState {
-  [key: string]: boolean;
+export interface BurndownData {
+  date: string;
+  ideal: number;
+  actual: number;
 }
 
-export interface ModalState {
-  [key: string]: boolean;
+export interface VelocityData {
+  sprint: string;
+  planned: number;
+  completed: number;
 }
 
-// Utility types
-export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
-export type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
+export interface FlowData {
+  date: string;
+  backlog: number;
+  inProgress: number;
+  testing: number;
+  done: number;
+}

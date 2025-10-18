@@ -1,113 +1,84 @@
 import apiClient from './apiClient';
+import { Project, PaginatedResponse, ProjectStatus } from '../types/index';
 
-export interface Project {
-  id: string;
-  name: string;
-  description: string;
-  organizationId: string;
-  organizationName?: string;
-  status: 'Not Started' | 'In Progress' | 'On Hold' | 'Completed' | 'Cancelled';
-  startDate?: string;
-  endDate?: string;
-  createdAt: string;
-  updatedAt: string;
-  memberCount?: number;
-  sprintCount?: number;
-  userStoryCount?: number;
+interface GetProjectsParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  status?: ProjectStatus;
 }
 
-export interface CreateProjectRequest {
+interface CreateProjectData {
   name: string;
-  description: string;
-  organizationId: string;
-  startDate?: string;
-  endDate?: string;
-}
-
-export interface UpdateProjectRequest {
-  name?: string;
   description?: string;
-  status?: 'Not Started' | 'In Progress' | 'On Hold' | 'Completed' | 'Cancelled';
+  productOwnerId?: number;
+  scrumMasterId?: number;
+  status?: ProjectStatus;
   startDate?: string;
   endDate?: string;
+  velocityGoal?: number;
+  sprintDuration?: number;
 }
 
 export const projectService = {
-  // Get projects with pagination
-  async getProjects(page: number = 1, pageSize: number = 10, filter?: any): Promise<{ projects: Project[]; pagination: any }> {
-    const params: any = { page, pageSize };
-    if (filter) {
-      if (filter.organizationId) {
-        params.organizationId = filter.organizationId;
-      }
-      if (filter.search) {
-        params.search = filter.search;
-      }
-      if (filter.status) {
-        params.status = filter.status;
-      }
-    }
+  // Get all projects
+  async getProjects(params: GetProjectsParams = {}): Promise<{
+    projects: Project[];
+    pagination: {
+      page: number;
+      pageSize: number;
+      totalCount: number;
+      totalPages: number;
+    };
+  }> {
     const response = await apiClient.get('/projects', { params });
     return response.data;
   },
 
-  // Get all projects (without pagination)
-  async getAllProjects(organizationId?: string): Promise<Project[]> {
-    const params = organizationId ? { organizationId } : {};
-    const response = await apiClient.get('/projects/all', { params });
-    return response.data;
-  },
-
   // Get project by ID
-  async getProjectById(id: string): Promise<Project> {
-    const response = await apiClient.get(`/projects/${id}`);
+  async getProject(projectId: number): Promise<Project> {
+    const response = await apiClient.get(`/projects/${projectId}`);
     return response.data;
   },
 
-  // Create a new project
-  async createProject(projectData: CreateProjectRequest): Promise<Project> {
+  // Create new project
+  async createProject(projectData: CreateProjectData): Promise<Project> {
     const response = await apiClient.post('/projects', projectData);
     return response.data;
   },
 
   // Update project
-  async updateProject(id: string, projectData: UpdateProjectRequest): Promise<Project> {
-    const response = await apiClient.put(`/projects/${id}`, projectData);
+  async updateProject(
+    projectId: number,
+    projectData: Partial<CreateProjectData>
+  ): Promise<Project> {
+    const response = await apiClient.put(`/projects/${projectId}`, projectData);
     return response.data;
   },
 
-  // Delete project
-  async deleteProject(id: string): Promise<void> {
-    await apiClient.delete(`/projects/${id}`);
-  },
-
-  // Get project members
-  async getProjectMembers(id: string): Promise<any[]> {
-    const response = await apiClient.get(`/projects/${id}/members`);
+  // Delete project (soft delete)
+  async deleteProject(projectId: number): Promise<{ message: string }> {
+    const response = await apiClient.delete(`/projects/${projectId}`);
     return response.data;
   },
 
-  // Add project member
-  async addProjectMember(projectId: string, userId: string, role: string): Promise<void> {
-    await apiClient.post(`/projects/${projectId}/members`, { userId, role });
-  },
-
-  // Remove project member
-  async removeProjectMember(projectId: string, userId: string): Promise<void> {
-    await apiClient.delete(`/projects/${projectId}/members/${userId}`);
-  },
-
-  // Get project sprints
-  async getProjectSprints(id: string): Promise<any[]> {
-    const response = await apiClient.get(`/projects/${id}/sprints`);
+  // Archive project
+  async archiveProject(projectId: number): Promise<{ message: string }> {
+    const response = await apiClient.post(`/projects/${projectId}/archive`);
     return response.data;
   },
 
-  // Get project user stories
-  async getProjectUserStories(id: string): Promise<any[]> {
-    const response = await apiClient.get(`/projects/${id}/user-stories`);
+  // Get project analytics
+  async getProjectAnalytics(projectId: number): Promise<{
+    totalSprints: number;
+    averageVelocity: number;
+    totalStories: number;
+    completedStories: number;
+    totalTasks: number;
+    completedTasks: number;
+    teamSize: number;
+  }> {
+    const response = await apiClient.get(`/projects/${projectId}/analytics`);
     return response.data;
   },
 };
-
-export default projectService;
