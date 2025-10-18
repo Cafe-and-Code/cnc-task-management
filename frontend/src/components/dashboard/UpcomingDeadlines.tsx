@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
+import { dashboardService } from '@services/dashboardService';
 
 interface Deadline {
   id: string;
@@ -18,64 +19,33 @@ export const UpcomingDeadlines: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading deadlines
+    // Load real deadlines from API
     const loadDeadlines = async () => {
       setIsLoading(true);
 
-      // Mock deadlines - in real implementation, this would come from API
-      const now = new Date();
-      const mockDeadlines: Deadline[] = [
-        {
-          id: '1',
-          title: 'Sprint 3 Review Meeting',
-          type: 'sprint',
-          dueDate: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
-          priority: 'high',
-          status: 'upcoming',
-          projectName: 'Mobile App Development',
-        },
-        {
-          id: '2',
-          title: 'API Integration Complete',
-          type: 'milestone',
-          dueDate: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
-          priority: 'medium',
-          status: 'upcoming',
-          projectName: 'Mobile App Development',
-        },
-        {
-          id: '3',
-          title: 'Database Design Review',
-          type: 'task',
-          dueDate: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
-          priority: 'medium',
-          status: 'upcoming',
-          projectName: 'Mobile App Development',
-          assignee: 'John Doe',
-        },
-        {
-          id: '4',
-          title: 'Project Milestone 1',
-          type: 'project',
-          dueDate: new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000), // 10 days from now
-          priority: 'high',
-          status: 'upcoming',
-          projectName: 'E-commerce Platform',
-        },
-        {
-          id: '5',
-          title: 'UI Components Library',
-          type: 'task',
-          dueDate: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000), // 1 day from now
-          priority: 'low',
-          status: 'upcoming',
-          projectName: 'Mobile App Development',
-          assignee: 'Jane Smith',
-        },
-      ];
+      try {
+        const deadlinesData = await dashboardService.fetchUpcomingDeadlines();
 
-      setDeadlines(mockDeadlines.sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime()));
-      setIsLoading(false);
+        // Transform API data to component format if needed
+        const transformedDeadlines: Deadline[] = deadlinesData.map((deadline: any) => ({
+          id: deadline.id?.toString() || deadline.deadlineId?.toString() || '',
+          title: deadline.title || deadline.name || '',
+          type: deadline.type || 'task',
+          dueDate: new Date(deadline.dueDate || deadline.endDate || deadline.date),
+          priority: deadline.priority || 'medium',
+          status: deadline.status || 'upcoming',
+          projectName: deadline.projectName || deadline.project?.name || '',
+          assignee: deadline.assignee || deadline.assignedTo?.name || '',
+        }));
+
+        setDeadlines(transformedDeadlines.sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime()));
+      } catch (error) {
+        console.error('Failed to load deadlines:', error);
+        // If API fails, set empty array to show "No upcoming deadlines" message
+        setDeadlines([]);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     loadDeadlines();

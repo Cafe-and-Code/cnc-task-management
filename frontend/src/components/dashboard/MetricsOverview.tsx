@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAppSelector } from '../../hooks/redux';
-import { useRolePermission } from '../auth/RoleBasedRoute';
+import { useRolePermission } from '../../components/auth/RoleBasedRoute';
 import { Link } from 'react-router-dom';
 
 interface MetricCardProps {

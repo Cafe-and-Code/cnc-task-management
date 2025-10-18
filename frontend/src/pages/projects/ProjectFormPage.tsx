@@ -101,17 +101,21 @@ export const ProjectFormPage: React.FC = () => {
 
         // Load users for Product Owner and Scrum Master selection
         try {
-          const [productOwners, scrumMasters] = await Promise.all([
+          const [productOwners, scrumMasters, adminResponse] = await Promise.all([
             userService.getProductOwners(),
-            userService.getScrumMasters()
+            userService.getScrumMasters(),
+            userService.getUsersByRole(UserRole.Admin, { includeCurrentUser: true })
           ]);
 
-          // Combine all users with their roles
-          const allUsers = [
-            ...productOwners.map(po => ({ ...po, id: po.id.toString() })),
-            ...scrumMasters.map(sm => ({ ...sm, id: sm.id.toString() }))
-          ];
-          setUsers(allUsers);
+          // Combine all users with their roles, ensuring no duplicates
+          const uniqueUsers = new Map();
+
+          // Add all user types to the map with string IDs
+          [...productOwners, ...scrumMasters, ...adminResponse.users].forEach(user => {
+            uniqueUsers.set(user.id.toString(), { ...user, id: user.id.toString() });
+          });
+
+          setUsers(Array.from(uniqueUsers.values()));
         } catch (userError: any) {
           console.error('Failed to load users:', userError);
           setError(userError.message || 'Failed to load users for selection');
@@ -243,8 +247,9 @@ export const ProjectFormPage: React.FC = () => {
     }
   };
 
-  const getProductOwners = () => users.filter(u => u.role === UserRole.ProductOwner);
-  const getScrumMasters = () => users.filter(u => u.role === UserRole.ScrumMaster);
+  // Include Admin users in Product Owner and Scrum Master filtering to expand role assignment flexibility
+  const getProductOwners = () => users.filter(u => u.role === UserRole.ProductOwner || u.role === UserRole.Admin);
+  const getScrumMasters = () => users.filter(u => u.role === UserRole.ScrumMaster || u.role === UserRole.Admin);
 
   if (isLoading) {
     return (

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import { dashboardService } from '@services/dashboardService';
 
 interface Notification {
   id: string;
@@ -21,85 +22,38 @@ export const NotificationCenter: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading notifications
+    // Load real notifications from API
     const loadNotifications = async () => {
       setIsLoading(true);
 
-      // Mock notifications - in real implementation, this would come from API
-      const now = new Date();
-      const mockNotifications: Notification[] = [
-        {
-          id: '1',
-          type: 'task',
-          title: 'Task Assigned',
-          message: 'You have been assigned to "API Integration" task',
-          timestamp: new Date(now.getTime() - 30 * 60 * 1000), // 30 minutes ago
-          read: false,
-          link: '/projects/1/tasks/123',
-          action: {
-            label: 'View Task',
-            onClick: () => console.log('Navigate to task'),
-          },
-        },
-        {
-          id: '2',
-          type: 'sprint',
-          title: 'Sprint Starting Soon',
-          message: 'Sprint 4 will start in 2 days',
-          timestamp: new Date(now.getTime() - 2 * 60 * 60 * 1000), // 2 hours ago
-          read: false,
-          link: '/sprints/4',
-        },
-        {
-          id: '3',
-          type: 'success',
-          title: 'Task Completed',
-          message: '"Database Design" task was marked as completed',
-          timestamp: new Date(now.getTime() - 4 * 60 * 60 * 1000), // 4 hours ago
-          read: true,
-          link: '/projects/1/tasks/456',
-        },
-        {
-          id: '4',
-          type: 'warning',
-          title: 'Deadline Approaching',
-          message: 'Project "Mobile App Development" deadline is in 3 days',
-          timestamp: new Date(now.getTime() - 6 * 60 * 60 * 1000), // 6 hours ago
-          read: true,
-          link: '/projects/1',
-        },
-        {
-          id: '5',
-          type: 'project',
-          title: 'New Team Member',
-          message: 'Sarah Wilson joined the "Mobile App Development" project',
-          timestamp: new Date(now.getTime() - 24 * 60 * 60 * 1000), // 1 day ago
-          read: true,
-          link: '/projects/1/team',
-        },
-        {
-          id: '6',
-          type: 'info',
-          title: 'System Update',
-          message: 'New features have been added to the dashboard',
-          timestamp: new Date(now.getTime() - 48 * 60 * 60 * 1000), // 2 days ago
-          read: true,
-        },
-        {
-          id: '7',
-          type: 'error',
-          title: 'Build Failed',
-          message: 'Automated build failed for branch "feature/user-auth"',
-          timestamp: new Date(now.getTime() - 72 * 60 * 60 * 1000), // 3 days ago
-          read: true,
-          link: '/projects/1/builds/789',
-        },
-      ];
+      try {
+        const notificationsData = await dashboardService.fetchNotifications();
 
-      setNotifications(
-        mockNotifications.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-      );
-      setIsLoading(false);
+        // Transform API data to component format if needed
+        const transformedNotifications: Notification[] = notificationsData.map((notification: any) => ({
+          id: notification.id?.toString() || notification.notificationId?.toString() || '',
+          type: notification.type || 'info',
+          title: notification.title || notification.subject || '',
+          message: notification.message || notification.content || '',
+          timestamp: new Date(notification.timestamp || notification.createdAt || notification.date),
+          read: notification.read || notification.isRead || false,
+          link: notification.link || notification.actionUrl || '',
+          action: notification.action ? {
+            label: notification.action.label || notification.action.text || 'View',
+            onClick: notification.action.onClick || (() => console.log('Navigate to notification')),
+          } : undefined,
+        }));
+
+        setNotifications(
+          transformedNotifications.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+        );
+      } catch (error) {
+        console.error('Failed to load notifications:', error);
+        // If API fails, set empty array to show "No notifications" message
+        setNotifications([]);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     loadNotifications();

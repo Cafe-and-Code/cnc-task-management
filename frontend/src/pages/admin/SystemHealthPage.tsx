@@ -38,73 +38,7 @@ import {
   Calendar,
   MoreVertical,
 } from 'lucide-react';
-
-// Types
-interface HealthCheck {
-  id: string;
-  name: string;
-  type: 'service' | 'database' | 'api' | 'network' | 'security' | 'storage';
-  status: 'healthy' | 'warning' | 'critical' | 'unknown';
-  responseTime: number;
-  lastCheck: string;
-  uptime: number;
-  description: string;
-  endpoint?: string;
-  dependencies: string[];
-  metrics: {
-    cpu: number;
-    memory: number;
-    disk: number;
-    network: number;
-  };
-  errors: HealthError[];
-}
-
-interface HealthError {
-  id: string;
-  type: 'timeout' | 'connection' | 'authentication' | 'permission' | 'resource' | 'configuration';
-  message: string;
-  timestamp: string;
-  resolved: boolean;
-  resolvedAt?: string;
-}
-
-interface SystemMetric {
-  name: string;
-  current: number;
-  previous: number;
-  unit: string;
-  status: 'normal' | 'warning' | 'critical';
-  threshold: {
-    warning: number;
-    critical: number;
-  };
-  trend: 'up' | 'down' | 'stable';
-  history: Array<{
-    timestamp: string;
-    value: number;
-  }>;
-}
-
-interface Alert {
-  id: string;
-  type: 'performance' | 'security' | 'availability' | 'capacity' | 'error';
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  title: string;
-  description: string;
-  component: string;
-  timestamp: string;
-  acknowledged: boolean;
-  acknowledgedBy?: string;
-  acknowledgedAt?: string;
-  resolved: boolean;
-  resolvedAt?: string;
-  metrics?: {
-    current: number;
-    threshold: number;
-    unit: string;
-  };
-}
+import { monitoringService, HealthCheck, SystemMetric, Alert } from '../../services/monitoringService';
 
 const SystemHealthPage: React.FC = () => {
   const [healthChecks, setHealthChecks] = useState<HealthCheck[]>([]);
@@ -119,363 +53,57 @@ const SystemHealthPage: React.FC = () => {
   const [componentFilter, setComponentFilter] = useState('all');
   const [timeRange, setTimeRange] = useState('1h');
 
-  // Mock data generation
+  // Load monitoring data from service
   useEffect(() => {
-    const generateHealthChecks = (): HealthCheck[] => [
-      {
-        id: 'web-server',
-        name: 'Web Server',
-        type: 'service',
-        status: Math.random() > 0.1 ? 'healthy' : Math.random() > 0.5 ? 'warning' : 'critical',
-        responseTime: Math.floor(Math.random() * 500) + 50,
-        lastCheck: new Date().toISOString(),
-        uptime: Math.random() * 100,
-        description: 'Main application web server handling HTTP requests',
-        endpoint: 'https://api.cnc-taskmanager.com/health',
-        dependencies: ['database', 'redis'],
-        metrics: {
-          cpu: Math.random() * 100,
-          memory: Math.random() * 100,
-          disk: Math.random() * 100,
-          network: Math.random() * 100,
-        },
-        errors:
-          Math.random() > 0.8
-            ? [
-                {
-                  id: 'error-1',
-                  type: 'timeout',
-                  message: 'Response time exceeded 5 seconds',
-                  timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-                  resolved: Math.random() > 0.5,
-                  resolvedAt:
-                    Math.random() > 0.5
-                      ? new Date(Date.now() - 5 * 60 * 1000).toISOString()
-                      : undefined,
-                },
-              ]
-            : [],
-      },
-      {
-        id: 'database',
-        name: 'Primary Database',
-        type: 'database',
-        status: Math.random() > 0.05 ? 'healthy' : 'warning',
-        responseTime: Math.floor(Math.random() * 200) + 20,
-        lastCheck: new Date().toISOString(),
-        uptime: Math.random() * 100,
-        description: 'PostgreSQL primary database for application data',
-        endpoint: 'postgresql://db.cnc-taskmanager.com:5432',
-        dependencies: [],
-        metrics: {
-          cpu: Math.random() * 100,
-          memory: Math.random() * 100,
-          disk: Math.random() * 100,
-          network: Math.random() * 100,
-        },
-        errors: [],
-      },
-      {
-        id: 'redis-cache',
-        name: 'Redis Cache',
-        type: 'service',
-        status: 'healthy',
-        responseTime: Math.floor(Math.random() * 50) + 5,
-        lastCheck: new Date().toISOString(),
-        uptime: Math.random() * 100,
-        description: 'Redis cache for session storage and caching',
-        endpoint: 'redis://cache.cnc-taskmanager.com:6379',
-        dependencies: [],
-        metrics: {
-          cpu: Math.random() * 100,
-          memory: Math.random() * 100,
-          disk: 0,
-          network: Math.random() * 100,
-        },
-        errors: [],
-      },
-      {
-        id: 'api-gateway',
-        name: 'API Gateway',
-        type: 'api',
-        status: Math.random() > 0.15 ? 'healthy' : 'warning',
-        responseTime: Math.floor(Math.random() * 300) + 30,
-        lastCheck: new Date().toISOString(),
-        uptime: Math.random() * 100,
-        description: 'API gateway handling routing and authentication',
-        endpoint: 'https://api.cnc-taskmanager.com',
-        dependencies: ['web-server', 'auth-service'],
-        metrics: {
-          cpu: Math.random() * 100,
-          memory: Math.random() * 100,
-          disk: Math.random() * 100,
-          network: Math.random() * 100,
-        },
-        errors: [],
-      },
-      {
-        id: 'auth-service',
-        name: 'Authentication Service',
-        type: 'service',
-        status: 'healthy',
-        responseTime: Math.floor(Math.random() * 200) + 25,
-        lastCheck: new Date().toISOString(),
-        uptime: Math.random() * 100,
-        description: 'JWT authentication and authorization service',
-        dependencies: ['database'],
-        metrics: {
-          cpu: Math.random() * 100,
-          memory: Math.random() * 100,
-          disk: Math.random() * 100,
-          network: Math.random() * 100,
-        },
-        errors: [],
-      },
-      {
-        id: 'file-storage',
-        name: 'File Storage',
-        type: 'storage',
-        status: Math.random() > 0.2 ? 'healthy' : 'warning',
-        responseTime: Math.floor(Math.random() * 1000) + 100,
-        lastCheck: new Date().toISOString(),
-        uptime: Math.random() * 100,
-        description: 'S3-compatible file storage service',
-        endpoint: 'https://storage.cnc-taskmanager.com',
-        dependencies: [],
-        metrics: {
-          cpu: Math.random() * 100,
-          memory: Math.random() * 100,
-          disk: Math.random() * 100,
-          network: Math.random() * 100,
-        },
-        errors: [],
-      },
-      {
-        id: 'elasticsearch',
-        name: 'Search Service',
-        type: 'service',
-        status: Math.random() > 0.25 ? 'healthy' : 'warning',
-        responseTime: Math.floor(Math.random() * 400) + 50,
-        lastCheck: new Date().toISOString(),
-        uptime: Math.random() * 100,
-        description: 'Elasticsearch service for search and analytics',
-        endpoint: 'https://search.cnc-taskmanager.com',
-        dependencies: [],
-        metrics: {
-          cpu: Math.random() * 100,
-          memory: Math.random() * 100,
-          disk: Math.random() * 100,
-          network: Math.random() * 100,
-        },
-        errors: [],
-      },
-      {
-        id: 'email-service',
-        name: 'Email Service',
-        type: 'service',
-        status: Math.random() > 0.3 ? 'healthy' : 'warning',
-        responseTime: Math.floor(Math.random() * 800) + 200,
-        lastCheck: new Date().toISOString(),
-        uptime: Math.random() * 100,
-        description: 'Email notification service',
-        endpoint: 'https://email.cnc-taskmanager.com',
-        dependencies: [],
-        metrics: {
-          cpu: Math.random() * 100,
-          memory: Math.random() * 100,
-          disk: Math.random() * 100,
-          network: Math.random() * 100,
-        },
-        errors: [],
-      },
-    ];
+    const loadMonitoringData = async () => {
+      try {
+        setLoading(true);
 
-    const generateSystemMetrics = (): SystemMetric[] => [
-      {
-        name: 'CPU Usage',
-        current: Math.random() * 100,
-        previous: Math.random() * 100,
-        unit: '%',
-        status: Math.random() > 0.7 ? 'warning' : 'normal',
-        threshold: { warning: 70, critical: 90 },
-        trend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable',
-        history: Array.from({ length: 20 }, (_, i) => ({
-          timestamp: new Date(Date.now() - (19 - i) * 5 * 60 * 1000).toISOString(),
-          value: Math.random() * 100,
-        })),
-      },
-      {
-        name: 'Memory Usage',
-        current: Math.random() * 100,
-        previous: Math.random() * 100,
-        unit: '%',
-        status: Math.random() > 0.8 ? 'critical' : Math.random() > 0.6 ? 'warning' : 'normal',
-        threshold: { warning: 60, critical: 80 },
-        trend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable',
-        history: Array.from({ length: 20 }, (_, i) => ({
-          timestamp: new Date(Date.now() - (19 - i) * 5 * 60 * 1000).toISOString(),
-          value: Math.random() * 100,
-        })),
-      },
-      {
-        name: 'Disk Usage',
-        current: Math.random() * 100,
-        previous: Math.random() * 100,
-        unit: '%',
-        status: Math.random() > 0.85 ? 'critical' : Math.random() > 0.7 ? 'warning' : 'normal',
-        threshold: { warning: 70, critical: 85 },
-        trend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable',
-        history: Array.from({ length: 20 }, (_, i) => ({
-          timestamp: new Date(Date.now() - (19 - i) * 5 * 60 * 1000).toISOString(),
-          value: Math.random() * 100,
-        })),
-      },
-      {
-        name: 'Network I/O',
-        current: Math.random() * 1000,
-        previous: Math.random() * 1000,
-        unit: 'Mbps',
-        status: 'normal',
-        threshold: { warning: 800, critical: 950 },
-        trend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable',
-        history: Array.from({ length: 20 }, (_, i) => ({
-          timestamp: new Date(Date.now() - (19 - i) * 5 * 60 * 1000).toISOString(),
-          value: Math.random() * 1000,
-        })),
-      },
-      {
-        name: 'Response Time',
-        current: Math.random() * 500 + 50,
-        previous: Math.random() * 500 + 50,
-        unit: 'ms',
-        status: Math.random() > 0.8 ? 'warning' : 'normal',
-        threshold: { warning: 400, critical: 1000 },
-        trend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable',
-        history: Array.from({ length: 20 }, (_, i) => ({
-          timestamp: new Date(Date.now() - (19 - i) * 5 * 60 * 1000).toISOString(),
-          value: Math.random() * 500 + 50,
-        })),
-      },
-      {
-        name: 'Request Rate',
-        current: Math.random() * 1000 + 100,
-        previous: Math.random() * 1000 + 100,
-        unit: 'req/s',
-        status: 'normal',
-        threshold: { warning: 1500, critical: 2000 },
-        trend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable',
-        history: Array.from({ length: 20 }, (_, i) => ({
-          timestamp: new Date(Date.now() - (19 - i) * 5 * 60 * 1000).toISOString(),
-          value: Math.random() * 1000 + 100,
-        })),
-      },
-    ];
+        // Load all monitoring data in parallel
+        const [healthChecksData, systemMetricsData, alertsData] = await Promise.all([
+          monitoringService.getHealthChecks(),
+          monitoringService.getSystemMetrics(),
+          monitoringService.getAlerts(),
+        ]);
 
-    const generateAlerts = (): Alert[] => [
-      {
-        id: 'alert-1',
-        type: 'performance',
-        severity: Math.random() > 0.5 ? 'medium' : 'high',
-        title: 'High CPU Usage on Web Server',
-        description: 'CPU usage has exceeded 80% for the last 15 minutes',
-        component: 'web-server',
-        timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-        acknowledged: Math.random() > 0.5,
-        acknowledgedBy: Math.random() > 0.5 ? 'admin@company.com' : undefined,
-        acknowledgedAt:
-          Math.random() > 0.5 ? new Date(Date.now() - 5 * 60 * 1000).toISOString() : undefined,
-        resolved: false,
-        metrics: {
-          current: 85,
-          threshold: 80,
-          unit: '%',
-        },
-      },
-      {
-        id: 'alert-2',
-        type: 'availability',
-        severity: 'critical',
-        title: 'Database Connection Failed',
-        description: 'Unable to establish connection to primary database',
-        component: 'database',
-        timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-        acknowledged: false,
-        resolved: false,
-      },
-      {
-        id: 'alert-3',
-        type: 'capacity',
-        severity: 'medium',
-        title: 'Disk Space Running Low',
-        description: 'Available disk space is below 20%',
-        component: 'file-storage',
-        timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-        acknowledged: Math.random() > 0.5,
-        resolved: Math.random() > 0.8,
-        resolvedAt:
-          Math.random() > 0.8 ? new Date(Date.now() - 10 * 60 * 1000).toISOString() : undefined,
-        metrics: {
-          current: 85,
-          threshold: 80,
-          unit: '%',
-        },
-      },
-      {
-        id: 'alert-4',
-        type: 'security',
-        severity: 'high',
-        title: 'Multiple Failed Login Attempts',
-        description: 'Detected multiple failed login attempts from unusual IP addresses',
-        component: 'auth-service',
-        timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-        acknowledged: true,
-        acknowledgedBy: 'security@company.com',
-        acknowledgedAt: new Date(Date.now() - 40 * 60 * 1000).toISOString(),
-        resolved: true,
-        resolvedAt: new Date(Date.now() - 35 * 60 * 1000).toISOString(),
-      },
-    ];
+        setHealthChecks(healthChecksData);
+        setSystemMetrics(systemMetricsData);
+        setAlerts(alertsData);
 
-    setHealthChecks(generateHealthChecks());
-    setSystemMetrics(generateSystemMetrics());
-    setAlerts(generateAlerts());
-    setLoading(false);
+      } catch (error) {
+        console.error('Failed to load monitoring data:', error);
+        // Set empty state on error
+        setHealthChecks([]);
+        setSystemMetrics([]);
+        setAlerts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMonitoringData();
   }, []);
 
   // Auto refresh
   useEffect(() => {
     if (!autoRefresh) return;
 
-    const interval = setInterval(() => {
-      // Refresh data
-      setHealthChecks(prev =>
-        prev.map(check => ({
-          ...check,
-          responseTime: Math.floor(Math.random() * 500) + 50,
-          lastCheck: new Date().toISOString(),
-          metrics: {
-            cpu: Math.random() * 100,
-            memory: Math.random() * 100,
-            disk: Math.random() * 100,
-            network: Math.random() * 100,
-          },
-        }))
-      );
+    const interval = setInterval(async () => {
+      try {
+        // Refresh data using monitoring service
+        const [healthChecksData, systemMetricsData, alertsData] = await Promise.all([
+          monitoringService.getHealthChecks(),
+          monitoringService.getSystemMetrics(),
+          monitoringService.getAlerts(),
+        ]);
 
-      setSystemMetrics(prev =>
-        prev.map(metric => ({
-          ...metric,
-          current: Math.random() * 100,
-          previous: metric.current,
-          history: [
-            ...metric.history.slice(1),
-            {
-              timestamp: new Date().toISOString(),
-              value: Math.random() * 100,
-            },
-          ],
-        }))
-      );
+        setHealthChecks(healthChecksData);
+        setSystemMetrics(systemMetricsData);
+        setAlerts(alertsData);
+
+      } catch (error) {
+        console.error('Failed to refresh monitoring data:', error);
+      }
     }, refreshInterval * 1000);
 
     return () => clearInterval(interval);
@@ -532,33 +160,49 @@ const SystemHealthPage: React.FC = () => {
     return icons[type];
   };
 
-  const handleAcknowledgeAlert = (alertId: string) => {
-    setAlerts(prev =>
-      prev.map(alert =>
-        alert.id === alertId
-          ? {
-              ...alert,
-              acknowledged: true,
-              acknowledgedBy: 'admin@company.com',
-              acknowledgedAt: new Date().toISOString(),
-            }
-          : alert
-      )
-    );
+  const handleAcknowledgeAlert = async (alertId: string) => {
+    try {
+      await monitoringService.acknowledgeAlert(alertId, 'admin@company.com');
+
+      // Update local state to reflect the change
+      setAlerts(prev =>
+        prev.map(alert =>
+          alert.id === alertId
+            ? {
+                ...alert,
+                acknowledged: true,
+                acknowledgedBy: 'admin@company.com',
+                acknowledgedAt: new Date().toISOString(),
+              }
+            : alert
+        )
+      );
+    } catch (error) {
+      console.error('Failed to acknowledge alert:', error);
+      alert('Failed to acknowledge alert. Please try again.');
+    }
   };
 
-  const handleResolveAlert = (alertId: string) => {
-    setAlerts(prev =>
-      prev.map(alert =>
-        alert.id === alertId
-          ? {
-              ...alert,
-              resolved: true,
-              resolvedAt: new Date().toISOString(),
-            }
-          : alert
-      )
-    );
+  const handleResolveAlert = async (alertId: string) => {
+    try {
+      await monitoringService.resolveAlert(alertId);
+
+      // Update local state to reflect the change
+      setAlerts(prev =>
+        prev.map(alert =>
+          alert.id === alertId
+            ? {
+                ...alert,
+                resolved: true,
+                resolvedAt: new Date().toISOString(),
+              }
+            : alert
+        )
+      );
+    } catch (error) {
+      console.error('Failed to resolve alert:', error);
+      alert('Failed to resolve alert. Please try again.');
+    }
   };
 
   const filteredAlerts = alerts.filter(alert => {

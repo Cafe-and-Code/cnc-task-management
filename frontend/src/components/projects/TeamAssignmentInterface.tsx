@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAppSelector } from '../../hooks/redux';
 import { UserRole } from '../../types/index';
-import { useRolePermission } from '../auth/RoleBasedRoute';
+import { useRolePermission } from '../../components/auth/RoleBasedRoute';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 
 interface TeamMember {

@@ -27,33 +27,35 @@ import {
   Eye,
 } from 'lucide-react';
 import UserFormModal from '../../components/admin/UserFormModal';
+import { userService } from '../../services/userService';
+import { UserRole } from '../../types/index';
 
 // Types
 interface User {
-  id: string;
+  id: number;
   email: string;
   firstName: string;
   lastName: string;
-  role: 'admin' | 'manager' | 'developer' | 'tester' | 'viewer';
-  status: 'active' | 'inactive' | 'suspended' | 'pending';
-  organization: string;
+  role: UserRole;
+  status: 'active' | 'inactive';
+  organization?: string;
   team?: string;
-  lastLogin: string;
+  lastLogin?: string;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
   emailVerified: boolean;
-  twoFactorEnabled: boolean;
-  profilePicture?: string;
+  twoFactorEnabled?: boolean;
+  avatarUrl?: string;
   phone?: string;
   location?: string;
   department?: string;
-  permissions: string[];
-  activity: UserActivity[];
-  projectsCount: number;
-  tasksAssigned: number;
-  tasksCompleted: number;
-  loginCount: number;
-  storageUsed: number;
+  permissions?: string[];
+  activity?: UserActivity[];
+  projectsCount?: number;
+  tasksAssigned?: number;
+  tasksCompleted?: number;
+  loginCount?: number;
+  storageUsed?: number;
 }
 
 interface UserActivity {
@@ -75,8 +77,8 @@ interface UserActivity {
 
 interface Filters {
   search: string;
-  role: string;
-  status: string;
+  role: UserRole | '';
+  status: 'active' | 'inactive' | '';
   organization: string;
   team: string;
   dateRange: string;
@@ -111,178 +113,88 @@ const UserManagementPage: React.FC = () => {
     total: 0,
     active: 0,
     inactive: 0,
-    suspended: 0,
-    pending: 0,
     admins: 0,
-    managers: 0,
+    productOwners: 0,
+    scrumMasters: 0,
     developers: 0,
-    testers: 0,
-    viewers: 0,
+    stakeholders: 0,
     newThisMonth: 0,
     onlineNow: 0,
   });
 
   const usersPerPage = 20;
 
-  // Mock data
+  // Load users and statistics from API
   useEffect(() => {
-    const mockUsers: User[] = [
-      {
-        id: '1',
-        email: 'john.doe@company.com',
-        firstName: 'John',
-        lastName: 'Doe',
-        role: 'admin',
-        status: 'active',
-        organization: 'CNC Manufacturing',
-        team: 'Development Team',
-        lastLogin: '2024-01-15T10:30:00Z',
-        createdAt: '2023-06-15T08:00:00Z',
-        updatedAt: '2024-01-15T10:30:00Z',
-        emailVerified: true,
-        twoFactorEnabled: true,
-        profilePicture: 'https://via.placeholder.com/40',
-        phone: '+1-555-0123',
-        location: 'New York, USA',
-        department: 'IT',
-        permissions: ['read', 'write', 'delete', 'admin'],
-        activity: [],
-        projectsCount: 8,
-        tasksAssigned: 45,
-        tasksCompleted: 38,
-        loginCount: 247,
-        storageUsed: 2048576,
-      },
-      {
-        id: '2',
-        email: 'jane.smith@company.com',
-        firstName: 'Jane',
-        lastName: 'Smith',
-        role: 'manager',
-        status: 'active',
-        organization: 'CNC Manufacturing',
-        team: 'Project Management',
-        lastLogin: '2024-01-15T09:15:00Z',
-        createdAt: '2023-08-20T10:30:00Z',
-        updatedAt: '2024-01-14T16:45:00Z',
-        emailVerified: true,
-        twoFactorEnabled: false,
-        phone: '+1-555-0124',
-        location: 'Los Angeles, USA',
-        department: 'Operations',
-        permissions: ['read', 'write', 'manage'],
-        activity: [],
-        projectsCount: 12,
-        tasksAssigned: 67,
-        tasksCompleted: 59,
-        loginCount: 189,
-        storageUsed: 1536000,
-      },
-      {
-        id: '3',
-        email: 'mike.wilson@company.com',
-        firstName: 'Mike',
-        lastName: 'Wilson',
-        role: 'developer',
-        status: 'inactive',
-        organization: 'CNC Manufacturing',
-        team: 'Development Team',
-        lastLogin: '2024-01-10T14:20:00Z',
-        createdAt: '2023-09-10T11:00:00Z',
-        updatedAt: '2024-01-10T14:20:00Z',
-        emailVerified: true,
-        twoFactorEnabled: false,
-        phone: '+1-555-0125',
-        location: 'Chicago, USA',
-        department: 'Engineering',
-        permissions: ['read', 'write'],
-        activity: [],
-        projectsCount: 6,
-        tasksAssigned: 34,
-        tasksCompleted: 28,
-        loginCount: 156,
-        storageUsed: 1024000,
-      },
-    ];
+    const loadUsers = async () => {
+      try {
+        setLoading(true);
 
-    // Add more mock users
-    const additionalUsers: User[] = Array.from({ length: 47 }, (_, i) => ({
-      id: `${i + 4}`,
-      email: `user${i + 4}@company.com`,
-      firstName: `User${i + 4}`,
-      lastName: 'Test',
-      role: ['admin', 'manager', 'developer', 'tester', 'viewer'][
-        Math.floor(Math.random() * 5)
-      ] as User['role'],
-      status: ['active', 'inactive', 'suspended', 'pending'][
-        Math.floor(Math.random() * 4)
-      ] as User['status'],
-      organization: 'CNC Manufacturing',
-      team: `Team ${(i % 5) + 1}`,
-      lastLogin: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-      createdAt: new Date(Date.now() - Math.random() * 180 * 24 * 60 * 60 * 1000).toISOString(),
-      updatedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-      emailVerified: Math.random() > 0.1,
-      twoFactorEnabled: Math.random() > 0.7,
-      phone: `+1-555-${String(i + 1000).padStart(4, '0')}`,
-      location: [
-        'New York, USA',
-        'Los Angeles, USA',
-        'Chicago, USA',
-        'Houston, USA',
-        'Phoenix, USA',
-      ][i % 5],
-      department: ['IT', 'Operations', 'Engineering', 'Quality', 'Maintenance'][i % 5],
-      permissions: [['read'], ['read', 'write'], ['read', 'write', 'manage']][
-        Math.floor(Math.random() * 3)
-      ],
-      activity: [],
-      projectsCount: Math.floor(Math.random() * 15) + 1,
-      tasksAssigned: Math.floor(Math.random() * 80) + 10,
-      tasksCompleted: Math.floor(Math.random() * 70) + 5,
-      loginCount: Math.floor(Math.random() * 300) + 10,
-      storageUsed: Math.floor(Math.random() * 5000000) + 100000,
-    }));
+        // Load users with current page and filters
+        const usersResponse = await userService.getUsers({
+          page: currentPage,
+          pageSize: usersPerPage,
+          search: filters.search || undefined,
+          role: filters.role || undefined,
+          isActive: filters.status ? filters.status === 'active' : undefined,
+        });
 
-    setUsers([...mockUsers, ...additionalUsers]);
-    setTotalUsers(50);
+        // Transform API users to match component interface
+        const transformedUsers: User[] = usersResponse.users.map(apiUser => ({
+          id: apiUser.id,
+          email: apiUser.email,
+          firstName: apiUser.firstName,
+          lastName: apiUser.lastName,
+          role: apiUser.role,
+          status: apiUser.isActive ? 'active' : 'inactive',
+          organization: apiUser.organization || 'CNC Manufacturing', // Default value
+          team: apiUser.team,
+          lastLogin: apiUser.lastLoginAt,
+          createdAt: apiUser.createdAt,
+          emailVerified: apiUser.isEmailVerified,
+          twoFactorEnabled: false, // Default value as API doesn't provide this
+          avatarUrl: apiUser.avatarUrl,
+          phone: apiUser.phone,
+          location: apiUser.location,
+          department: apiUser.department,
+          projectsCount: apiUser.projectsCount || 0,
+          tasksAssigned: apiUser.tasksAssigned || 0,
+          tasksCompleted: apiUser.tasksCompleted || 0,
+          loginCount: apiUser.loginCount || 0,
+          storageUsed: apiUser.storageUsed || 0,
+        }));
 
-    // Calculate stats
-    const stats = {
-      total: additionalUsers.length + mockUsers.length,
-      active:
-        mockUsers.filter(u => u.status === 'active').length +
-        additionalUsers.filter(u => u.status === 'active').length,
-      inactive:
-        mockUsers.filter(u => u.status === 'inactive').length +
-        additionalUsers.filter(u => u.status === 'inactive').length,
-      suspended:
-        mockUsers.filter(u => u.status === 'suspended').length +
-        additionalUsers.filter(u => u.status === 'suspended').length,
-      pending:
-        mockUsers.filter(u => u.status === 'pending').length +
-        additionalUsers.filter(u => u.status === 'pending').length,
-      admins:
-        mockUsers.filter(u => u.role === 'admin').length +
-        additionalUsers.filter(u => u.role === 'admin').length,
-      managers:
-        mockUsers.filter(u => u.role === 'manager').length +
-        additionalUsers.filter(u => u.role === 'manager').length,
-      developers:
-        mockUsers.filter(u => u.role === 'developer').length +
-        additionalUsers.filter(u => u.role === 'developer').length,
-      testers:
-        mockUsers.filter(u => u.role === 'tester').length +
-        additionalUsers.filter(u => u.role === 'tester').length,
-      viewers:
-        mockUsers.filter(u => u.role === 'viewer').length +
-        additionalUsers.filter(u => u.role === 'viewer').length,
-      newThisMonth: 12,
-      onlineNow: 8,
+        setUsers(transformedUsers);
+        setTotalUsers(usersResponse.pagination.totalCount);
+
+        // Load user statistics
+        const stats = await userService.getUserStats();
+        setUserStats(stats);
+
+      } catch (error) {
+        console.error('Failed to load users:', error);
+        // Set empty state on error
+        setUsers([]);
+        setTotalUsers(0);
+        setUserStats({
+          total: 0,
+          active: 0,
+          inactive: 0,
+          admins: 0,
+          productOwners: 0,
+          scrumMasters: 0,
+          developers: 0,
+          stakeholders: 0,
+          newThisMonth: 0,
+          onlineNow: 0,
+        });
+      } finally {
+        setLoading(false);
+      }
     };
-    setUserStats(stats);
-    setLoading(false);
-  }, []);
+
+    loadUsers();
+  }, [currentPage, filters]);
 
   // Filter users
   const filteredUsers = users.filter(user => {
@@ -337,31 +249,57 @@ const UserManagementPage: React.FC = () => {
     }
   };
 
-  const handleStatusChange = async (userId: string, newStatus: User['status']) => {
-    setUsers(prev =>
-      prev.map(user =>
-        user.id === userId
-          ? { ...user, status: newStatus, updatedAt: new Date().toISOString() }
-          : user
-      )
-    );
+  const handleStatusChange = async (userId: number, newStatus: User['status']) => {
+    try {
+      if (newStatus === 'active') {
+        await userService.activateUser(userId);
+      } else {
+        await userService.deactivateUser(userId);
+      }
+
+      setUsers(prev =>
+        prev.map(user =>
+          user.id === userId
+            ? { ...user, status: newStatus, updatedAt: new Date().toISOString() }
+            : user
+        )
+      );
+    } catch (error) {
+      console.error('Failed to update user status:', error);
+      alert('Failed to update user status. Please try again.');
+    }
   };
 
-  const handleRoleChange = async (userId: string, newRole: User['role']) => {
-    setUsers(prev =>
-      prev.map(user =>
-        user.id === userId ? { ...user, role: newRole, updatedAt: new Date().toISOString() } : user
-      )
-    );
+  const handleRoleChange = async (userId: number, newRole: UserRole) => {
+    try {
+      await userService.updateUserRole(userId, newRole);
+
+      setUsers(prev =>
+        prev.map(user =>
+          user.id === userId ? { ...user, role: newRole, updatedAt: new Date().toISOString() } : user
+        )
+      );
+    } catch (error) {
+      console.error('Failed to update user role:', error);
+      alert('Failed to update user role. Please try again.');
+    }
   };
 
-  const handleDeleteUser = async (userId: string) => {
+  const handleDeleteUser = async (userId: number) => {
     if (
       window.confirm('Are you sure you want to delete this user? This action cannot be undone.')
     ) {
-      setUsers(prev => prev.filter(user => user.id !== userId));
-      setSelectedUsers(prev => prev.filter(id => id !== userId));
-      setTotalUsers(prev => prev - 1);
+      try {
+        // Note: Backend doesn't have a delete endpoint yet, this would need to be implemented
+        // await userService.deleteUser(userId);
+
+        setUsers(prev => prev.filter(user => user.id !== userId));
+        setSelectedUsers(prev => prev.filter(id => id !== userId));
+        setTotalUsers(prev => prev - 1);
+      } catch (error) {
+        console.error('Failed to delete user:', error);
+        alert('Failed to delete user. Please try again.');
+      }
     }
   };
 
@@ -373,25 +311,23 @@ const UserManagementPage: React.FC = () => {
     }
   };
 
-  const getRoleColor = (role: User['role']) => {
+  const getRoleColor = (role: UserRole) => {
     const colors = {
-      admin: 'bg-purple-100 text-purple-800',
-      manager: 'bg-blue-100 text-blue-800',
-      developer: 'bg-green-100 text-green-800',
-      tester: 'bg-yellow-100 text-yellow-800',
-      viewer: 'bg-gray-100 text-gray-800',
+      [UserRole.Admin]: 'bg-purple-100 text-purple-800',
+      [UserRole.ProductOwner]: 'bg-blue-100 text-blue-800',
+      [UserRole.ScrumMaster]: 'bg-green-100 text-green-800',
+      [UserRole.Developer]: 'bg-yellow-100 text-yellow-800',
+      [UserRole.Stakeholder]: 'bg-gray-100 text-gray-800',
     };
-    return colors[role];
+    return colors[role] || 'bg-gray-100 text-gray-800';
   };
 
   const getStatusColor = (status: User['status']) => {
     const colors = {
       active: 'bg-green-100 text-green-800',
       inactive: 'bg-yellow-100 text-yellow-800',
-      suspended: 'bg-red-100 text-red-800',
-      pending: 'bg-gray-100 text-gray-800',
     };
-    return colors[status];
+    return colors[status] || 'bg-gray-100 text-gray-800';
   };
 
   const formatDate = (dateString: string) => {
@@ -558,14 +494,14 @@ const UserManagementPage: React.FC = () => {
                   <select
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={filters.role}
-                    onChange={e => setFilters(prev => ({ ...prev, role: e.target.value }))}
+                    onChange={e => setFilters(prev => ({ ...prev, role: e.target.value as UserRole | '' }))}
                   >
                     <option value="">All Roles</option>
-                    <option value="admin">Admin</option>
-                    <option value="manager">Manager</option>
-                    <option value="developer">Developer</option>
-                    <option value="tester">Tester</option>
-                    <option value="viewer">Viewer</option>
+                    <option value={UserRole.Admin}>Admin</option>
+                    <option value={UserRole.ProductOwner}>Product Owner</option>
+                    <option value={UserRole.ScrumMaster}>Scrum Master</option>
+                    <option value={UserRole.Developer}>Developer</option>
+                    <option value={UserRole.Stakeholder}>Stakeholder</option>
                   </select>
                 </div>
 
@@ -574,13 +510,11 @@ const UserManagementPage: React.FC = () => {
                   <select
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={filters.status}
-                    onChange={e => setFilters(prev => ({ ...prev, status: e.target.value }))}
+                    onChange={e => setFilters(prev => ({ ...prev, status: e.target.value as 'active' | 'inactive' | '' }))}
                   >
                     <option value="">All Statuses</option>
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
-                    <option value="suspended">Suspended</option>
-                    <option value="pending">Pending</option>
                   </select>
                 </div>
 
@@ -826,8 +760,6 @@ const UserManagementPage: React.FC = () => {
                       >
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
-                        <option value="suspended">Suspended</option>
-                        <option value="pending">Pending</option>
                       </select>
                       <button
                         onClick={() => handleDeleteUser(user.id)}
@@ -1106,34 +1038,67 @@ const UserManagementPage: React.FC = () => {
         }}
         onSubmit={async userData => {
           if (showCreateModal) {
-            // Create new user
-            const newUser: User = {
-              id: Date.now().toString(),
-              ...userData,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              lastLogin: '',
-              emailVerified: userData.emailVerified,
-              twoFactorEnabled: userData.twoFactorEnabled,
-              activity: [],
-              projectsCount: 0,
-              tasksAssigned: 0,
-              tasksCompleted: 0,
-              loginCount: 0,
-              storageUsed: 0,
-              profilePicture: undefined,
-            };
-            setUsers(prev => [newUser, ...prev]);
-            setTotalUsers(prev => prev + 1);
+            // Create new user - Note: Backend doesn't have create user endpoint yet
+            // This would need to be implemented in the backend
+            try {
+              // await userService.createUser(userData);
+              console.log('User creation not yet implemented in backend API');
+              // For now, just reload the users list
+              window.location.reload();
+            } catch (error) {
+              console.error('Failed to create user:', error);
+              alert('Failed to create user. Please try again.');
+            }
           } else if (showEditModal && selectedUser) {
             // Update existing user
-            setUsers(prev =>
-              prev.map(user =>
-                user.id === selectedUser.id
-                  ? { ...user, ...userData, updatedAt: new Date().toISOString() }
-                  : user
-              )
-            );
+            try {
+              if (userData.role !== selectedUser.role) {
+                await userService.updateUserRole(selectedUser.id, userData.role);
+              }
+              if (userData.status !== selectedUser.status) {
+                if (userData.status === 'active') {
+                  await userService.activateUser(selectedUser.id);
+                } else {
+                  await userService.deactivateUser(selectedUser.id);
+                }
+              }
+
+              // Reload users to get updated data
+              const usersResponse = await userService.getUsers({
+                page: currentPage,
+                pageSize: usersPerPage,
+              });
+
+              // Transform and update users
+              const transformedUsers: User[] = usersResponse.users.map(apiUser => ({
+                id: apiUser.id,
+                email: apiUser.email,
+                firstName: apiUser.firstName,
+                lastName: apiUser.lastName,
+                role: apiUser.role,
+                status: apiUser.isActive ? 'active' : 'inactive',
+                organization: apiUser.organization || 'CNC Manufacturing',
+                team: apiUser.team,
+                lastLogin: apiUser.lastLoginAt,
+                createdAt: apiUser.createdAt,
+                emailVerified: apiUser.isEmailVerified,
+                twoFactorEnabled: false,
+                avatarUrl: apiUser.avatarUrl,
+                phone: apiUser.phone,
+                location: apiUser.location,
+                department: apiUser.department,
+                projectsCount: apiUser.projectsCount || 0,
+                tasksAssigned: apiUser.tasksAssigned || 0,
+                tasksCompleted: apiUser.tasksCompleted || 0,
+                loginCount: apiUser.loginCount || 0,
+                storageUsed: apiUser.storageUsed || 0,
+              }));
+
+              setUsers(transformedUsers);
+            } catch (error) {
+              console.error('Failed to update user:', error);
+              alert('Failed to update user. Please try again.');
+            }
           }
         }}
         user={selectedUser}

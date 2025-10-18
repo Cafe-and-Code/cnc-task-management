@@ -33,7 +33,8 @@ namespace CNCTaskManagement.Api.Controllers
             [FromQuery] int pageSize = 10,
             [FromQuery] string? search = null,
             [FromQuery] UserRole? role = null,
-            [FromQuery] bool? isActive = null)
+            [FromQuery] bool? isActive = null,
+            [FromQuery] bool includeCurrentUser = false)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var currentUserOrganizationId = User.FindFirstValue("OrganizationId");
@@ -45,9 +46,18 @@ namespace CNCTaskManagement.Api.Controllers
 
             var organizationId = int.Parse(currentUserOrganizationId);
 
+            // Debug logging
+            Console.WriteLine($"[DEBUG] CurrentUserId: {currentUserId}, OrganizationId: {organizationId}, RequestedRole: {role}, IncludeCurrentUser: {includeCurrentUser}");
+
             // Start with base query
             var query = _context.Users
-                .Where(u => u.OrganizationId == organizationId && u.Id != int.Parse(currentUserId));
+                .Where(u => u.OrganizationId == organizationId);
+
+            // Exclude current user unless explicitly included
+            if (!includeCurrentUser)
+            {
+                query = query.Where(u => u.Id != int.Parse(currentUserId));
+            }
 
             // Apply filters
             if (!string.IsNullOrEmpty(search))
@@ -71,6 +81,7 @@ namespace CNCTaskManagement.Api.Controllers
 
             // Get total count
             var totalCount = await query.CountAsync();
+            Console.WriteLine($"[DEBUG] Total users found: {totalCount}");
 
             // Apply pagination
             var users = await query

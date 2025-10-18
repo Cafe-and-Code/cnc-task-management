@@ -44,9 +44,7 @@ export const activityService = {
         limit: params.limit || 10,
         type: params.type,
         userId: params.userId,
-        projectId: params.projectId,
-        sort: 'timestamp',
-        order: 'desc'
+        projectId: params.projectId
       }
     });
     return response.data;
@@ -54,14 +52,12 @@ export const activityService = {
 
   // Get activities for a specific project
   async getProjectActivities(projectId: number, params: Omit<GetActivitiesParams, 'projectId'> = {}): Promise<ActivitiesResponse> {
-    const response = await apiClient.get(`/projects/${projectId}/activities`, {
+    const response = await apiClient.get(`/activities/project/${projectId}`, {
       params: {
         page: params.page || 1,
         pageSize: params.pageSize || 20,
         type: params.type,
-        userId: params.userId,
-        sort: 'timestamp',
-        order: 'desc'
+        userId: params.userId
       }
     });
     return response.data;
@@ -69,14 +65,10 @@ export const activityService = {
 
   // Get activities for a specific user
   async getUserActivities(userId: number, params: Omit<GetActivitiesParams, 'userId'> = {}): Promise<ActivitiesResponse> {
-    const response = await apiClient.get(`/users/${userId}/activities`, {
+    const response = await apiClient.get(`/activities/my-activity`, {
       params: {
         page: params.page || 1,
-        pageSize: params.pageSize || 20,
-        type: params.type,
-        projectId: params.projectId,
-        sort: 'timestamp',
-        order: 'desc'
+        pageSize: params.pageSize || 20
       }
     });
     return response.data;
