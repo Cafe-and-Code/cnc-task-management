@@ -9,7 +9,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { format, addDays } from 'date-fns';
 
 interface BurndownData {
   date: string;
@@ -22,20 +21,8 @@ interface SprintProgressChartProps {
 }
 
 export const SprintProgressChart: React.FC<SprintProgressChartProps> = ({ className = '' }) => {
-  // Mock burndown data - in real implementation, this would come from API
-  const burndownData: BurndownData[] = [
-    { date: format(addDays(new Date(), -10), 'MMM dd'), ideal: 40, actual: 38 },
-    { date: format(addDays(new Date(), -9), 'MMM dd'), ideal: 36, actual: 35 },
-    { date: format(addDays(new Date(), -8), 'MMM dd'), ideal: 32, actual: 33 },
-    { date: format(addDays(new Date(), -7), 'MMM dd'), ideal: 28, actual: 30 },
-    { date: format(addDays(new Date(), -6), 'MMM dd'), ideal: 24, actual: 28 },
-    { date: format(addDays(new Date(), -5), 'MMM dd'), ideal: 20, actual: 22 },
-    { date: format(addDays(new Date(), -4), 'MMM dd'), ideal: 16, actual: 18 },
-    { date: format(addDays(new Date(), -3), 'MMM dd'), ideal: 12, actual: 15 },
-    { date: format(addDays(new Date(), -2), 'MMM dd'), ideal: 8, actual: 12 },
-    { date: format(addDays(new Date(), -1), 'MMM dd'), ideal: 4, actual: 6 },
-    { date: format(new Date(), 'MMM dd'), ideal: 0, actual: 0 },
-  ];
+  // Burndown data - should be populated from API
+  const burndownData: BurndownData[] = [];
 
   return (
     <div
@@ -62,7 +49,7 @@ export const SprintProgressChart: React.FC<SprintProgressChartProps> = ({ classN
                   borderRadius: '4px',
                   color: '#fff',
                 }}
-                formatter={(value, name, props) => {
+                formatter={(value, name) => {
                   if (name === 'ideal' || name === 'actual') {
                     return [`${value} story points`, name];
                   }

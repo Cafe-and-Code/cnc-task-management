@@ -29,56 +29,10 @@ interface PerformanceData {
 }
 
 export const TeamPerformanceMetrics: React.FC = () => {
-  // Mock team performance data - in real implementation, this would come from API
-  const teamMembers: TeamMember[] = [
-    {
-      id: '1',
-      name: 'John Doe',
-      tasksCompleted: 12,
-      tasksInProgress: 3,
-      velocity: 28,
-      efficiency: 92,
-    },
-    {
-      id: '2',
-      name: 'Jane Smith',
-      tasksCompleted: 8,
-      tasksInProgress: 5,
-      velocity: 24,
-      efficiency: 85,
-    },
-    {
-      id: '3',
-      name: 'Mike Johnson',
-      tasksCompleted: 15,
-      tasksInProgress: 2,
-      velocity: 32,
-      efficiency: 95,
-    },
-    {
-      id: '4',
-      name: 'Sarah Wilson',
-      tasksCompleted: 10,
-      tasksInProgress: 4,
-      velocity: 26,
-      efficiency: 88,
-    },
-    {
-      id: '5',
-      name: 'Tom Brown',
-      tasksCompleted: 6,
-      tasksInProgress: 6,
-      velocity: 20,
-      efficiency: 78,
-    },
-  ];
+  // Team performance data - should be populated from API
+  const teamMembers: TeamMember[] = [];
 
-  const performanceDistribution: PerformanceData[] = [
-    { name: 'Excellent', value: 2, color: '#10b981' },
-    { name: 'Good', value: 2, color: '#3b82f6' },
-    { name: 'Average', value: 1, color: '#f59e0b' },
-    { name: 'Below Average', value: 0, color: '#ef4444' },
-  ];
+  const performanceDistribution: PerformanceData[] = [];
 
   const getPerformanceColor = (efficiency: number) => {
     if (efficiency >= 90) return 'text-green-600 dark:text-green-400';
@@ -105,15 +59,28 @@ export const TeamPerformanceMetrics: React.FC = () => {
         {/* Team Overview Stats */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div className="text-center">
-            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">5</p>
+            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{teamMembers.length}</p>
             <p className="text-xs text-gray-500 dark:text-gray-400">Team Members</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-green-600 dark:text-green-400">26</p>
+            <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+              {teamMembers.length > 0
+                ? Math.round(
+                    teamMembers.reduce((sum, m) => sum + m.velocity, 0) / teamMembers.length
+                  )
+                : '-'}
+            </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">Avg Velocity</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">87%</p>
+            <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+              {teamMembers.length > 0
+                ? Math.round(
+                    teamMembers.reduce((sum, m) => sum + m.efficiency, 0) / teamMembers.length
+                  )
+                : '-'}
+              %
+            </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">Avg Efficiency</p>
           </div>
         </div>
