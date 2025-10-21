@@ -78,7 +78,7 @@ export const SprintProgressChart: React.FC<SprintProgressChartProps> = ({ classN
         </div>
 
         {/* Sprint Stats */}
-        <div className="mt-6 grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-4 mt-6">
           <div className="text-center">
             <p className="text-2xl font-bold text-brand-primary">
               {burndownData.length > 0 ? burndownData[0]?.ideal || '-' : '-'}
@@ -103,7 +103,7 @@ export const SprintProgressChart: React.FC<SprintProgressChartProps> = ({ classN
 
         {/* Sprint Progress Bar */}
         <div className="mt-4">
-          <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+          <div className="flex items-center justify-between mb-2 text-sm text-gray-600 dark:text-gray-400">
             <span>Sprint Progress</span>
             <span>
               {burndownData.length > 0
@@ -116,9 +116,9 @@ export const SprintProgressChart: React.FC<SprintProgressChartProps> = ({ classN
               %
             </span>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <div className="w-full h-2 bg-gray-200 rounded-full dark:bg-gray-700">
             <div
-              className="bg-brand-primary h-2 rounded-full"
+              className="h-2 rounded-full bg-brand-primary"
               style={{
                 width:
                   burndownData.length > 0
