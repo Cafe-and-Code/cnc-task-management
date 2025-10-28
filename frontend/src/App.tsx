@@ -13,6 +13,10 @@ import { ProfilePage } from './pages/ProfilePage.tsx';
 import { ProjectsPage } from './pages/projects/ProjectsPage.tsx';
 import { ProjectDetailPage } from './pages/projects/ProjectDetailPage.tsx';
 import { ProjectFormPage } from './pages/projects/ProjectFormPage.tsx';
+import { ProductBacklogPage } from './pages/backlog/ProductBacklogPage.tsx';
+import { SprintsPage } from './pages/sprints/SprintsPage.tsx';
+import CreateTaskPage from './pages/tasks/CreateTaskPage.tsx';
+import { KanbanBoardPage } from './pages/kanban/KanbanBoardPage.tsx';
 import { LoadingSpinner } from './components/ui/LoadingSpinner.tsx';
 
 function App() {
@@ -58,6 +62,11 @@ function App() {
         <Route path="projects/new" element={<ProjectFormPage />} />
         <Route path="projects/:projectId" element={<ProjectDetailPage />} />
         <Route path="projects/:projectId/edit" element={<ProjectFormPage />} />
+        <Route path="projects/:projectId/backlog" element={<ProductBacklogPage />} />
+        <Route path="projects/:projectId/sprints" element={<SprintsPage />} />
+        <Route path="projects/:projectId/tasks/new" element={<CreateTaskPage />} />
+        <Route path="projects/:projectId/kanban" element={<KanbanBoardPage />} />
+        <Route path="tasks/new" element={<CreateTaskPage />} />
         {/* Add more routes as we implement them */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>

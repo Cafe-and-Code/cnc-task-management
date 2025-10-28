@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useSensor, useSensors, PointerSensor, useDroppable } from '@dnd-kit/core'
-import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
-import { arrayMove } from '@dnd-kit/utilities'
+import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
 import { Link } from 'react-router-dom'
-import { Plus, MoreHorizontal, Calendar, Users, Filter, Download, Settings, Eye, EyeOff, Column, Rows, Search, Clock, AlertCircle, CheckCircle, XCircle, Target, User } from 'lucide-react'
-import { DetailedTaskCard } from '../kanban/DetailedTaskCard'
-import { QuickTaskModal } from '../kanban/QuickTaskModal'
-import { WIPLimitsIndicator } from '../kanban/WIPLimitsIndicator'
-import { WIPManagementPanel } from '../kanban/WIPManagementPanel'
+import { Plus, Calendar, Users, Download, Settings, Eye, EyeOff, Columns, Rows, Search, Clock, AlertCircle, CheckCircle, Target } from 'lucide-react'
+import { DetailedTaskCard } from '@components/kanban/DetailedTaskCard'
+import { QuickTaskModal } from '@components/kanban/QuickTaskModal'
+import { WIPLimitsIndicator } from '@components/kanban/WIPLimitsIndicator'
+import { WIPManagementPanel } from '@components/kanban/WIPManagementPanel'
 
 // Types
 interface Task {
@@ -263,7 +262,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
                     onCreateTask(column.id, duplicatedTask)
                   }}
                   onArchive={() => {
-                    // In a real implementation, this would archive the task
+                    // TODO: Implement task archiving
                     console.log('Archive task:', task.id)
                   }}
                   isExpanded={expandedTaskId === task.id}
@@ -272,25 +271,13 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
               ))}
               <button
                 onClick={() => setShowQuickAddModal(true)}
-                className="w-full p-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex items-center justify-center space-x-2"
+                className="flex items-center justify-center w-full p-3 space-x-2 text-gray-500 transition-colors border-2 border-gray-300 border-dashed rounded-lg dark:border-gray-600 dark:text-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Task</span>
               </button>
             </div>
           </SortableContext>
-
-          {/* Quick Task Modal */}
-          {showQuickAddModal && (
-            <QuickTaskModal
-              isOpen={showQuickAddModal}
-              onClose={() => setShowQuickAddModal(false)}
-              onCreateTask={handleCreateTask}
-              columnId={column.id}
-              columnName={column.title}
-              teamMembers={teamMembers}
-            />
-          )}
         )}
       </div>
 
@@ -323,6 +310,18 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
           compact={true}
         />
       </div>
+
+      {/* Quick Task Modal */}
+      {showQuickAddModal && (
+        <QuickTaskModal
+          isOpen={showQuickAddModal}
+          onClose={() => setShowQuickAddModal(false)}
+          onCreateTask={handleCreateTask}
+          columnId={column.id}
+          columnName={column.title}
+          teamMembers={teamMembers}
+        />
+      )}
     </div>
   )
 }
@@ -401,196 +400,26 @@ export const KanbanBoardPage: React.FC<KanbanBoardProps> = ({
     }
   }, [])
 
-  // Mock data - in real implementation, this would come from API
+  // Load tasks and team members from API
   useEffect(() => {
-    const mockTasks: Task[] = [
-      {
-        id: 'task-1',
-        title: 'Implement user authentication system',
-        description: 'Build secure login, registration, and password reset functionality with JWT tokens',
-        status: 'todo',
-        priority: 'high',
-        assignee: {
-          id: 'user-1',
-          name: 'John Developer',
-          role: 'Developer'
-        },
-        reporter: {
-          id: 'user-2',
-          name: 'Jane Product',
-          role: 'Product Owner'
-        },
-        storyPoints: 8,
-        labels: ['backend', 'security'],
-        createdAt: '2024-01-15T10:00:00Z',
-        updatedAt: '2024-01-15T10:00:00Z',
-        estimatedHours: 16,
-        actualHours: 14,
-        subtasks: [
-          { id: 'sub-1-1', title: 'Create login API endpoint', completed: true },
-          { id: 'sub-1-2', title: 'Implement JWT token management', completed: true },
-          { id: 'sub-1-3', title: 'Add password reset functionality', completed: false }
-        ],
-        tags: ['authentication']
-      },
-      {
-        id: 'task-2',
-        title: 'Design database schema for user management',
-        description: 'Create comprehensive database schema for users, roles, and permissions',
-        status: 'in-progress',
-        priority: 'medium',
-        assignee: {
-          id: 'user-3',
-          name: 'Sarah DBA',
-          role: 'Database Architect'
-        },
-        reporter: {
-          id: 'user-4',
-          name: 'Mike Architect',
-          role: 'Technical Lead'
-        },
-        storyPoints: 5,
-        labels: ['database', 'design'],
-        createdAt: '2024-01-16T09:00:00Z',
-        updatedAt: 'updatedAt',
-        estimatedHours: 8,
-        actualHours: 6,
-        tags: ['design']
-      },
-      {
-        id: 'task-3',
-        title: 'Create responsive dashboard layout',
-        description: 'Design and implement a responsive dashboard with key metrics and charts',
-        status: 'todo',
-        priority: 'medium',
-        assignee: {
-          id: 'user-5',
-          name: 'Lisa Designer',
-          role: 'UI/UX Designer'
-        },
-        reporter: {
-          id: 'user-2',
-          name: 'Jane Product',
-          role: 'Product Owner'
-        },
-        storyPoints: 13,
-        labels: ['frontend', 'design'],
-        createdAt: '2024-01-17T14:00:00Z',
-        updatedAt: '2024-01-17T14:00:00Z',
-        estimatedHours: 20,
-        tags: ['design']
-      },
-      {
-        id: 'task-4',
-        title: 'Setup testing framework and CI/CD pipeline',
-        description: 'Configure automated testing, code quality checks, and deployment pipeline',
-        status: 'todo',
-        priority: 'high',
-        assignee: {
-          id: 'user-6',
-          name: 'Tom QA',
-          role: 'QA Engineer'
-        },
-        reporter: {
-          id: 'user-7',
-          name: 'Rick DevOps',
-          role: 'DevOps Engineer'
-        },
-        storyPoints: 3,
-        labels: ['testing', 'devops'],
-        createdAt: '2024-01-18T11:00:00Z',
-        updatedAt: '2024-01-18T11:00:00Z',
-        estimatedHours: 6,
-        tags: ['testing']
-      },
-      {
-        id: 'task-5',
-        title: 'Write comprehensive API documentation',
-        description: 'Create detailed documentation for all API endpoints and usage examples',
-        status: 'review',
-        priority: 'low',
-        assignee: {
-          id: 'user-8',
-          name: 'Amy Writer',
-          role: 'Technical Writer'
-        },
-        reporter: {
-          id: 'user-9',
-          name: 'Bob Manager',
-          role: 'Project Manager'
-        },
-        storyPoints: 2,
-        labels: ['documentation'],
-        createdAt: '2024-01-19T16:00:00Z',
-        updatedAt: 'updatedAt',
-        estimatedHours: 4,
-        tags: ['documentation']
+    const loadData = async () => {
+      setIsLoading(true)
+      try {
+        // TODO: Implement API calls to fetch tasks and team members
+        // const tasksResponse = await taskService.getTasks({ projectId, sprintId, ...filter })
+        // const teamMembersResponse = await userService.getTeamMembers(projectId)
+        
+        // For now, set empty data until API integration is complete
+        setTasks([])
+        setTeamMembers([])
+      } catch (error) {
+        console.error('Failed to load kanban data:', error)
+      } finally {
+        setIsLoading(false)
       }
-    ]
+    }
 
-    const mockTeamMembers: TeamMember[] = [
-      {
-        id: 'user-1',
-        name: 'John Developer',
-        email: 'john@example.com',
-        role: 'Developer',
-        avatarUrl: 'https://api.dicebear.com/7y7v5w3?seed=john'
-      },
-      {
-        id: 'user-2',
-        name: 'Jane Product',
-        email: 'jane@example.com',
-        role: 'Product Owner',
-        avatarUrl: 'https://api.dicebear.com/7h7v5w3?seed=jane'
-      },
-      {
-        id: 'user-3',
-        name: 'Sarah DBA',
-        email: 'sarah@example.com',
-        role: 'Database Architect',
-        avatarUrl: 'https://api.dicebear.com/5h7v5w3?seed=sarah'
-      },
-      {
-        id: 'user-4',
-        name: 'Mike Architect',
-        email: 'mike@example.com',
-        role: 'Technical Lead',
-        avatarUrl: 'https://api.dicebear.com/3h7v5w3?seed=mike'
-      }
-    ]
-
-    // Filter tasks based on props
-    const filteredTasks = mockTasks.filter(task => {
-      if (filter?.assignee && task.assignee?.id !== filter.assignee) return false
-      if (filter?.priority && task.priority !== filter.priority) return false
-      if (filter?.label && !task.labels.includes(filter.label)) return false
-      if (filter?.search) {
-        const searchLower = filter.search.toLowerCase()
-        return task.title.toLowerCase().includes(searchLower) ||
-               task.description.toLowerCase().includes(searchLower)
-      }
-      return true
-    })
-
-    // Distribute tasks to columns based on status
-    const distributedTasks = filteredTasks.reduce((acc, task) => {
-      const column = acc.find(col => col.status === task.status)
-      if (column) {
-        const columnTasks = acc.find(col => col.id === column.id)?.tasks || []
-        const updatedColumns = acc.map(col => {
-          if (col.id === column.id) {
-            return { ...col, tasks: [...columnTasks, task] }
-          }
-          return col
-        })
-        return updatedColumns
-      }
-      return acc
-    }, columns)
-
-    setTasks(distributedTasks)
-    setTeamMembers(mockTeamMembers)
-    setIsLoading(false)
+    loadData()
   }, [projectId, sprintId, filter])
 
   const sensors = useSensors(
@@ -660,7 +489,7 @@ export const KanbanBoardPage: React.FC<KanbanBoardProps> = ({
       tasks: column.tasks.map(task =>
         task.id === taskId ? { ...task, ...updates } : task
       )
-    }))
+    })))
   }
 
   const handleDeleteTask = (taskId: string) => {
@@ -796,9 +625,9 @@ export const KanbanBoardPage: React.FC<KanbanBoardProps> = ({
   }, [tasks])
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between p-4 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Kanban Board
@@ -844,48 +673,49 @@ export const KanbanBoardPage: React.FC<KanbanBoardProps> = ({
             </button>
           </div>
         </div>
+      </div>
 
-        {/* WIP Management Panel */}
-        {showWIPPanel && (
-          <div className="px-4 pb-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-            <WIPManagementPanel
-              columns={columns.map(col => ({
-                ...col,
-                averageTime: Math.random() * 24 + 8, // Mock data: 8-32 hours
-                throughput: Math.random() * 3 + 1 // Mock data: 1-4 tasks per day
-              }))}
-              onLimitChange={handleColumnLimitChange}
-              onRefresh={() => {
-                // In a real implementation, this would refresh the data
-                console.log('Refreshing WIP data...')
-              }}
-            />
-          </div>
-        )}
+      {/* WIP Management Panel */}
+      {showWIPPanel && (
+        <div className="px-4 pb-4 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+          <WIPManagementPanel
+            columns={columns.map(col => ({
+              ...col,
+              averageTime: 0,
+              throughput: 0
+            }))}
+            onLimitChange={handleColumnLimitChange}
+            onRefresh={() => {
+              // TODO: Implement data refresh from API
+              console.log('Refreshing WIP data...')
+            }}
+          />
+        </div>
+      )}
 
-        {/* Filters */}
-        <div className="px-4 pb-2 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      {/* Filters */}
+      <div className="px-4 pb-2 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
           <div className="flex items-center space-x-4">
             <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
+              <Search className="absolute w-4 h-4 text-gray-400 left-3 top-3" />
               <input
                 type="text"
                 placeholder="Search tasks..."
                 value={filter?.search || ''}
                 onChange={(e) => {
-                  // In a real implementation, this would update the filter
+                  // TODO: Implement filter update
                   console.log('Search:', e.target.value)
                 }}
-                className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white w-64"
+                className="w-64 py-2 pl-10 pr-4 text-gray-900 bg-white border border-gray-300 rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               />
             </div>
             <select
               value={filter?.assignee || ''}
               onChange={(e) => {
-                // In a real implementation, this would update the filter
+                // TODO: Implement filter update
                 console.log('Filter by assignee:', e.target.value)
               }}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             >
               <option value="">All Assignees</option>
               {teamMembers.map((member) => (
@@ -897,10 +727,10 @@ export const KanbanBoardPage: React.FC<KanbanBoardProps> = ({
             <select
               value={filter?.priority || ''}
               onChange={(e) => {
-                // In a real implementation, this would update the filter
+                // TODO: Implement filter update
                 console.log('Filter by priority:', e.target.value)
               }}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             >
               <option value="">All Priorities</option>
               <option value="critical">Critical</option>
@@ -916,148 +746,147 @@ export const KanbanBoardPage: React.FC<KanbanBoardProps> = ({
                   : 'text-gray-600 hover:text-gray-800 dark:hover:text-gray-200'
               }`}
             >
-              <Column className="w-4 h-4" />
+              <Columns className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* View Mode Toggle */}
-        <div className="px-4 pb-2 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600 dark:text-gray-400">View:</span>
-            <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-              <button
-                onClick={() => setViewMode('cards')}
-                className={`px-3 py-1 rounded-md text-sm font-medium ${
-                  viewMode === 'cards'
-                    ? 'bg-white dark:bg-gray-800 text-brand-primary'
-                    : 'text-gray-600 dark:text-gray-400'
-                }`}
-              >
-                Cards
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`px-3 py-1 rounded-md text-sm font-medium ${
-                  viewMode === 'list'
-                    ? 'bg-white dark:bg-gray-800 text-brand-primary'
-                    : 'text-gray-600 dark:text-gray-400'
-                }`}
-              >
-                List
-              </button>
-            </div>
+      {/* View Mode Toggle */}
+      <div className="px-4 pb-2 bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-gray-600 dark:text-gray-400">View:</span>
+          <div className="flex p-1 bg-gray-100 rounded-lg dark:bg-gray-700">
+            <button
+              onClick={() => setViewMode('cards')}
+              className={`px-3 py-1 rounded-md text-sm font-medium ${
+                viewMode === 'cards'
+                  ? 'bg-white dark:bg-gray-800 text-brand-primary'
+                  : 'text-gray-600 dark:text-gray-400'
+              }`}
+            >
+              Cards
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`px-3 py-1 rounded-md text-sm font-medium ${
+                viewMode === 'list'
+                  ? 'bg-white dark:bg-gray-800 text-brand-primary'
+                  : 'text-gray-600 dark:text-gray-400'
+              }`}
+            >
+              List
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Kanban Board */}
+      <DndContext
+        sensors={sensors}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="flex-1 overflow-x-auto">
+          <div className="flex h-full gap-4 p-4 min-w-max">
+            {columns.map((column) => (
+              <DroppableColumn key={column.id} column={column}>
+                <KanbanColumn
+                  column={column}
+                  tasks={column.tasks}
+                  onUpdateTask={handleUpdateTask}
+                  onDeleteTask={handleDeleteTask}
+                  onMoveTask={handleMoveTask}
+                  onCreateTask={handleCreateTask}
+                  teamMembers={teamMembers}
+                  viewMode={viewMode}
+                />
+              </DroppableColumn>
+            ))}
           </div>
         </div>
 
-        {/* Kanban Board */}
-        <DndContext
-          sensors={sensors}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-        >
-          <div className="flex-1 overflow-x-auto">
-            <div className="flex gap-4 p-4 min-w-max h-full">
-              {columns.map((column) => (
-                <DroppableColumn key={column.id} column={column}>
-                  <KanbanColumn
-                    column={column}
-                    tasks={column.tasks}
-                    onUpdateTask={handleUpdateTask}
-                    onDeleteTask={handleDeleteTask}
-                    onMoveTask={handleMoveTask}
-                    onCreateTask={handleCreateTask}
-                    teamMembers={teamMembers}
-                    viewMode={viewMode}
-                  />
-                </DroppableColumn>
-              ))}
+        <DragOverlay>
+          {activeTask ? (
+            <div className="transform rotate-6 opacity-95">
+              <DetailedTaskCard
+                task={activeTask}
+                onUpdate={() => {}}
+                onDelete={() => {}}
+                onDuplicate={() => {}}
+                onArchive={() => {}}
+                isExpanded={false}
+                onToggleExpand={() => {}}
+              />
             </div>
-          </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
 
-          <DragOverlay>
-            {activeTask ? (
-              <div className="transform rotate-6 opacity-95">
-                <DetailedTaskCard
-                  task={activeTask}
-                  onUpdate={() => {}}
-                  onDelete={() => {}}
-                  onDuplicate={() => {}}
-                  onArchive={() => {}}
-                  isExpanded={false}
-                  onToggleExpand={() => {}}
-                />
+      {/* Column Limits Indicator */}
+      {showColumnLimits && (
+        <div className="px-4 py-2 bg-white border-t border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+          <div className="flex items-center space-x-6">
+            {columns.map((column) => (
+              <div
+                key={column.id}
+                className={`text-sm ${
+                  column.tasks.length >= column.limit
+                    ? 'text-red-600 dark:text-red-400'
+                    : 'text-gray-600 dark:text-gray-400'
+                }`}
+              >
+                {column.title}: {column.tasks.length}/{column.limit}
               </div>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
-
-        {/* Column Limits Indicator */}
-        {showColumnLimits && (
-          <div className="px-4 py-2 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center space-x-6">
-              {columns.map((column) => (
-                <div
-                  key={column.id}
-                  className={`text-sm ${
-                    column.tasks.length >= column.limit
-                      ? 'text-red-600 dark:text-red-400'
-                      : 'text-gray-600 dark:text-gray-400'
-                  }`}
-                >
-                  {column.title}: {column.tasks.length}/{column.limit}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Board Stats */}
-        <div className="px-4 py-2 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-          <div className="grid grid-cols-5 gap-4 text-sm">
-            <div className="text-center">
-              <div className="text-lg font-bold text-gray-900 dark:text-white">
-                {tasksByStatus.todo}
-              </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">
-                To Do
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                {tasksByStatus['in-progress']}
-              </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">
-                In Progress
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                {tasksByStatus.testing}
-              </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">
-                Testing
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
-                {tasksByStatus.review}
-              </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">
-                Review
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-green-600 dark:text-green-400">
-                {tasksByStatus.done}
-              </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">
-                Done
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       )}
+
+      {/* Board Stats */}
+      <div className="px-4 py-2 bg-white border-t border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+        <div className="grid grid-cols-5 gap-4 text-sm">
+          <div className="text-center">
+            <div className="text-lg font-bold text-gray-900 dark:text-white">
+              {tasksByStatus.todo}
+            </div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">
+              To Do
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+              {tasksByStatus['in-progress']}
+            </div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">
+              In Progress
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
+              {tasksByStatus.testing}
+            </div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">
+              Testing
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
+              {tasksByStatus.review}
+            </div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">
+              Review
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-lg font-bold text-green-600 dark:text-green-400">
+              {tasksByStatus.done}
+            </div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">
+              Done
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

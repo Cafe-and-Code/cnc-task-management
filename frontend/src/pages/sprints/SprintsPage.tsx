@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import {
   Calendar,
   Clock,
@@ -14,57 +14,105 @@ import {
   Search,
   MoreHorizontal,
 } from 'lucide-react';
+import { sprintService } from '@services/sprintService';
 
 // Types
 interface UserStory {
-  id: string;
+  id: number;
   title: string;
   storyPoints: number;
   status: 'backlog' | 'in_sprint' | 'completed' | 'in_progress' | 'testing' | 'blocked';
   assignee?: {
-    id: string;
+    id: number;
     name: string;
     avatarUrl?: string;
   };
 }
 
 interface Sprint {
-  id: string;
+  id: number;
   name: string;
   description?: string;
   startDate: string;
   endDate: string;
   capacity: number;
   status: 'planning' | 'active' | 'completed' | 'cancelled';
-  assignedStories: UserStory[];
-  velocity?: number;
+  userStoryCount: number;
+  completedUserStoryCount: number;
+  totalStoryPoints: number;
+  completedStoryPoints: number;
+  velocityGoal: number;
+  velocityActual: number;
   goal?: string;
   progress?: number;
   burndownData?: { day: number; remaining: number }[];
-  team: {
-    id: string;
-    name: string;
-    members: TeamMember[];
-  };
+  sprintNumber: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface TeamMember {
-  id: string;
+  id: number;
   name: string;
   avatarUrl?: string;
   role: string;
 }
 
 export const SprintsPage: React.FC = () => {
+  const { projectId } = useParams<{ projectId: string }>();
+  const currentProjectId = projectId ? parseInt(projectId) : 1; // Default to project 1 for now
+
   const [sprints, setSprints] = useState<Sprint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'timeline' | 'list' | 'cards'>('timeline');
 
-  // Mock data - in real implementation, this would come from API
+  // Load sprints from API
   useEffect(() => {
-    const mockSprints: Sprint[] = [
+    const loadSprints = async () => {
+      if (!currentProjectId) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const response = await sprintService.getSprints({
+          projectId: currentProjectId,
+          status: statusFilter !== 'all' ? statusFilter as any : undefined,
+          search: searchQuery || undefined,
+        });
+
+        // Transform API response to match frontend interface
+        const transformedSprints: Sprint[] = response.sprints.map((sprint: any) => ({
+          id: sprint.id,
+          name: sprint.name,
+          description: sprint.description,
+          startDate: sprint.StartDate,
+          endDate: sprint.EndDate,
+          capacity: sprint.velocityGoal || 0,
+          status: sprint.status.toLowerCase() as any,
+          userStoryCount: sprint.UserStoryCount || 0,
+          completedUserStoryCount: sprint.CompletedUserStoryCount || 0,
+          totalStoryPoints: sprint.TotalStoryPoints || 0,
+          completedStoryPoints: sprint.CompletedStoryPoints || 0,
+          velocityGoal: sprint.VelocityGoal || 0,
+          velocityActual: sprint.VelocityActual || 0,
+          goal: sprint.description,
+          progress: sprint.UserStoryCount > 0 ?
+            Math.round((sprint.CompletedUserStoryCount / sprint.UserStoryCount) * 100) : 0,
+          burndownData: [], // TODO: Implement burndown data when backend supports it
+          sprintNumber: sprint.SprintNumber || 0,
+          createdAt: sprint.createdAt,
+          updatedAt: sprint.updatedAt,
+        }));
+
+        setSprints(transformedSprints);
+      } catch (error) {
+        console.error('Failed to load sprints:', error);
+        // Use mock data as fallback
+        const mockSprints: Sprint[] = [
       {
         id: 'sprint-1',
         name: 'Sprint 1 - Foundation',
@@ -250,8 +298,13 @@ export const SprintsPage: React.FC = () => {
     ];
 
     setSprints(mockSprints);
-    setIsLoading(false);
-  }, []);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadSprints();
+  }, [currentProjectId, statusFilter, searchQuery]);
 
   const filteredSprints = sprints.filter(sprint => {
     const matchesSearch =

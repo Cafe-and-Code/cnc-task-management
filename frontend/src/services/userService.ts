@@ -83,6 +83,12 @@ export const userService = {
   },
 
   // Get Product Owners
+  /**
+   * Get users eligible for Product Owner role
+   * Note: In the frontend, these users are filtered to include both ProductOwner and Admin roles
+   * @param params - Optional parameters for filtering
+   * @returns Promise resolving to array of Product Owner users
+   */
   async getProductOwners(params: Omit<GetUsersParams, 'role'> = {}): Promise<User[]> {
     const response = await apiClient.get('/users', {
       params: {
@@ -96,6 +102,12 @@ export const userService = {
   },
 
   // Get Scrum Masters
+  /**
+   * Get users eligible for Scrum Master role
+   * Note: In the frontend, these users are filtered to include both ScrumMaster and Admin roles
+   * @param params - Optional parameters for filtering
+   * @returns Promise resolving to array of Scrum Master users
+   */
   async getScrumMasters(params: Omit<GetUsersParams, 'role'> = {}): Promise<User[]> {
     const response = await apiClient.get('/users', {
       params: {

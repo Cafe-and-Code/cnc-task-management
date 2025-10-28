@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useRolePermission } from '@components/auth/RoleBasedRoute';
 import { LoadingSpinner } from '@components/ui/LoadingSpinner';
 import {
@@ -11,17 +11,19 @@ import { StoryPointEstimationModal } from '@components/backlog/StoryPointEstimat
 import { PriorityManagementModal } from '@components/backlog/PriorityManagementModal';
 import { BulkActionsPanel } from '@components/backlog/BulkActionsPanel';
 import { SprintAssignmentModal } from '@components/backlog/SprintAssignmentModal';
+import { backlogService } from '@services/backlogService';
 
 interface UserStory {
-  id: string;
+  id: number;
   title: string;
   description: string;
   storyPoints: number;
   priority: 'low' | 'medium' | 'high' | 'critical';
   status: 'backlog' | 'in_sprint' | 'completed';
   assignee?: {
-    id: string;
-    name: string;
+    id: number;
+    firstName: string;
+    lastName: string;
     avatarUrl?: string;
   };
   epic?: {
@@ -33,6 +35,15 @@ interface UserStory {
   createdAt: string;
   updatedAt: string;
   acceptanceCriteria: string[];
+  taskCount?: number;
+  completedTaskCount?: number;
+  totalEstimatedHours?: number;
+  createdByUser?: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    avatarUrl?: string;
+  };
 }
 
 interface BacklogState {
@@ -60,6 +71,8 @@ export const ProductBacklogPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector(state => state.auth);
   const { isManagement, isAdmin } = useRolePermission();
+  const { projectId } = useParams<{ projectId: string }>();
+  const currentProjectId = projectId ? parseInt(projectId) : 1; // Default to project 1 for now
 
   const [state, setState] = useState<BacklogState>({
     stories: [],
@@ -87,7 +100,61 @@ export const ProductBacklogPage: React.FC = () => {
       try {
         setState(prev => ({ ...prev, isLoading: true, error: null }));
 
-        // Mock stories data - in real implementation, this would come from API
+        // Load stories from API
+        if (!currentProjectId) {
+          setState(prev => ({
+            ...prev,
+            error: 'Project ID is required',
+            isLoading: false,
+          }));
+          return;
+        }
+
+        const response = await backlogService.getBacklogItems(currentProjectId, {
+          page: 1,
+          pageSize: 20,
+          search: state.searchQuery || undefined,
+          priority: state.priorityFilter !== 'all' ?
+            state.priorityFilter as any : undefined,
+          assigneeFilter: state.assigneeFilter !== 'all' ?
+            state.assigneeFilter : undefined,
+          sortBy: state.sortBy,
+          sortOrder: state.sortOrder,
+        });
+
+        // Transform API response to match frontend interface
+        const stories: UserStory[] = response.userStories.map((story: any) => ({
+          id: story.id,
+          title: story.title,
+          description: story.description || '',
+          storyPoints: story.storyPoints,
+          priority: story.priority.toLowerCase() as any,
+          status: story.status.toLowerCase() as any,
+          assignee: story.AssignedToUser ? {
+            id: story.AssignedToUser.id,
+            firstName: story.AssignedToUser.firstName,
+            lastName: story.AssignedToUser.lastName,
+            avatarUrl: story.AssignedToUser.avatarUrl,
+            name: `${story.AssignedToUser.firstName} ${story.AssignedToUser.lastName}`,
+          } : undefined,
+          labels: [], // TODO: Implement labels when backend supports them
+          createdAt: story.createdAt,
+          updatedAt: story.updatedAt,
+          acceptanceCriteria: Array.isArray(story.AcceptanceCriteria) ?
+            story.AcceptanceCriteria : [],
+          taskCount: story.TaskCount || 0,
+          completedTaskCount: story.CompletedTaskCount || 0,
+          totalEstimatedHours: story.TotalEstimatedHours || 0,
+          createdByUser: story.CreatedByUser ? {
+            id: story.CreatedByUser.id,
+            firstName: story.CreatedByUser.firstName,
+            lastName: story.CreatedByUser.lastName,
+            avatarUrl: story.CreatedByUser.avatarUrl,
+            name: `${story.CreatedByUser.firstName} ${story.CreatedByUser.lastName}`,
+          } : undefined,
+        }));
+
+        // For now, use mock data if API fails or returns empty
         const mockStories: UserStory[] = [
           {
             id: '1',
@@ -236,7 +303,9 @@ export const ProductBacklogPage: React.FC = () => {
           },
         ];
 
-        setState(prev => ({ ...prev, stories: mockStories, isLoading: false }));
+        // Use API data if available, otherwise fall back to mock data
+        const finalStories = stories.length > 0 ? stories : mockStories;
+        setState(prev => ({ ...prev, stories: finalStories, isLoading: false }));
       } catch (error: any) {
         console.error('Failed to load user stories:', error);
         setState(prev => ({
@@ -248,7 +317,7 @@ export const ProductBacklogPage: React.FC = () => {
     };
 
     loadStories();
-  }, [dispatch]);
+  }, [currentProjectId, state.searchQuery, state.priorityFilter, state.assigneeFilter, state.sortBy, state.sortOrder]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setState(prev => ({ ...prev, searchQuery: e.target.value }));

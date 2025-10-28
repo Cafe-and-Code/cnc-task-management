@@ -1,114 +1,147 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import TaskForm from '../components/tasks/TaskForm';
+import TaskForm from '../../components/tasks/TaskForm';
+import { taskService } from '@services/taskService';
+import { projectService } from '@services/projectService';
+import { userService } from '@services/userService';
+import { sprintService } from '@services/sprintService';
 
 interface TeamMember {
-  id: string;
+  id: number;
+  firstName: string;
+  lastName: string;
   name: string;
   avatarUrl?: string;
   role: string;
 }
 
 interface Project {
-  id: string;
+  id: number;
   name: string;
   key: string;
 }
 
 interface Sprint {
-  id: string;
+  id: number;
   name: string;
   status: string;
   startDate: string;
   endDate: string;
 }
 
+interface UserStory {
+  id: number;
+  title: string;
+  status: string;
+  storyPoints: number;
+}
+
 const CreateTaskPage: React.FC = () => {
   const navigate = useNavigate();
   const { projectId } = useParams<{ projectId?: string }>();
+  const currentProjectId = projectId ? parseInt(projectId) : undefined;
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [sprints, setSprints] = useState<Sprint[]>([]);
+  const [userStories, setUserStories] = useState<UserStory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data - in real implementation, this would come from API
+  // Load data from API
   useEffect(() => {
-    setTimeout(() => {
-      const mockProjects: Project[] = [
-        { id: 'proj-1', name: 'CNC Task Management System', key: 'CNCTMS' },
-        { id: 'proj-2', name: 'Mobile App Development', key: 'MAD' },
-        { id: 'proj-3', name: 'Website Redesign', key: 'WR' },
-      ];
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-      const mockTeamMembers: TeamMember[] = [
-        {
-          id: 'user-1',
-          name: 'John Doe',
-          avatarUrl: 'https://picsum.photos/seed/john/40/40.jpg',
-          role: 'Developer',
-        },
-        {
-          id: 'user-2',
-          name: 'Jane Smith',
-          avatarUrl: 'https://picsum.photos/seed/jane/40/40.jpg',
-          role: 'Product Manager',
-        },
-        { id: 'user-3', name: 'Alice Johnson', role: 'UX Designer' },
-        {
-          id: 'user-4',
-          name: 'Bob Wilson',
-          avatarUrl: 'https://picsum.photos/seed/bob/40/40.jpg',
-          role: 'Developer',
-        },
-        { id: 'user-5', name: 'Carol Davis', role: 'QA Engineer' },
-      ];
+        // Load projects
+        const projectsResponse = await projectService.getProjects();
+        const projects = projectsResponse.projects;
 
-      const mockSprints: Sprint[] = [
-        {
-          id: 'sprint-1',
-          name: 'Sprint 1 - Foundation',
-          status: 'active',
-          startDate: '2024-01-08',
-          endDate: '2024-01-22',
-        },
-        {
-          id: 'sprint-2',
-          name: 'Sprint 2 - Core Features',
-          status: 'planned',
-          startDate: '2024-01-23',
-          endDate: '2024-02-06',
-        },
-        {
-          id: 'sprint-3',
-          name: 'Sprint 3 - Enhancement',
-          status: 'planned',
-          startDate: '2024-02-07',
-          endDate: '2024-02-21',
-        },
-      ];
+        // Load team members if projectId is provided
+        let teamMembers: TeamMember[] = [];
+        let userStories: UserStory[] = [];
+        let sprints: Sprint[] = [];
 
-      setProjects(mockProjects);
-      setTeamMembers(mockTeamMembers);
-      setSprints(mockSprints);
-      setIsLoading(false);
-    }, 500);
-  }, []);
+        if (currentProjectId) {
+          try {
+            const teamMembersResponse = await taskService.getAvailableTeamMembers(currentProjectId);
+            teamMembers = teamMembersResponse.map((member: any) => ({
+              id: member.id,
+              firstName: member.firstName,
+              lastName: member.lastName,
+              name: `${member.firstName} ${member.lastName}`,
+              avatarUrl: member.avatarUrl,
+              role: member.role || 'Team Member',
+            }));
 
-  const handleSubmit = (taskData: any) => {
-    // In a real implementation, this would call the API to create the task
-    console.log('Creating task:', taskData);
+            const userStoriesResponse = await taskService.getAvailableUserStories(currentProjectId);
+            userStories = userStoriesResponse.map((story: any) => ({
+              id: story.id,
+              title: story.title,
+              status: story.status,
+              storyPoints: story.storyPoints,
+            }));
 
-    // Simulate API call
-    setTimeout(() => {
+            const sprintsResponse = await sprintService.getSprints({ projectId: currentProjectId });
+            sprints = sprintsResponse.sprints.map((sprint: any) => ({
+              id: sprint.id,
+              name: sprint.name,
+              status: sprint.status,
+              startDate: sprint.StartDate,
+              endDate: sprint.EndDate,
+            }));
+          } catch (err) {
+            console.warn('Failed to load project-specific data:', err);
+            // Continue without project-specific data
+          }
+        }
+
+        setProjects(projects);
+        setTeamMembers(teamMembers);
+        setUserStories(userStories);
+        setSprints(sprints);
+      } catch (error: any) {
+        console.error('Failed to load data:', error);
+        setError(error.message || 'Failed to load required data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [currentProjectId]);
+
+  const handleSubmit = async (taskData: any) => {
+    try {
+      // Transform form data to match API format
+      const apiTaskData = {
+        title: taskData.title,
+        description: taskData.description,
+        userStoryId: taskData.userStoryId,
+        assignedToUserId: taskData.assignedToUserId || undefined,
+        status: taskData.status || 'ToDo',
+        priority: taskData.priority || 'Medium',
+        estimatedHours: taskData.estimatedHours || 0,
+        dueDate: taskData.dueDate || undefined,
+      };
+
+      // Create the task via API
+      const createdTask = await taskService.createTask(apiTaskData);
+      console.log('Task created successfully:', createdTask);
+
       // Navigate to the task detail page or back to the board
       if (taskData.projectId) {
         navigate(`/projects/${taskData.projectId}/kanban`);
       } else {
         navigate('/projects');
       }
-    }, 1000);
+    } catch (error: any) {
+      console.error('Failed to create task:', error);
+      setError(error.message || 'Failed to create task');
+    }
   };
 
   const handleCancel = () => {
@@ -123,6 +156,22 @@ const CreateTaskPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-600 dark:text-red-400 mb-4">Error: {error}</div>
+          <button
+            onClick={handleCancel}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Go Back
+          </button>
+        </div>
       </div>
     );
   }

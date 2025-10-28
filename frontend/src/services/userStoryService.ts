@@ -15,25 +15,25 @@ interface GetUserStoriesParams {
 interface CreateUserStoryData {
   title: string;
   description?: string;
-  acceptanceCriteria?: string;
+  acceptanceCriteria?: any[] | object;
   storyPoints: number;
   priority: UserStoryPriority;
   businessValue: number;
   estimatedHours?: number;
-  assigneeId?: number;
+  assignedToUserId?: number;
   projectId: number;
 }
 
 interface UpdateUserStoryData {
   title?: string;
   description?: string;
-  acceptanceCriteria?: string;
+  acceptanceCriteria?: any[] | object;
   storyPoints?: number;
   priority?: UserStoryPriority;
   status?: UserStoryStatus;
   businessValue?: number;
   estimatedHours?: number;
-  assigneeId?: number;
+  assignedToUserId?: number;
 }
 
 export const userStoryService = {
@@ -56,10 +56,7 @@ export const userStoryService = {
   },
 
   // Update user story
-  async updateUserStory(
-    storyId: number,
-    storyData: UpdateUserStoryData
-  ): Promise<UserStory> {
+  async updateUserStory(storyId: number, storyData: UpdateUserStoryData): Promise<UserStory> {
     const response = await apiClient.put(`/UserStories/${storyId}`, storyData);
     return response.data;
   },
@@ -83,13 +80,19 @@ export const userStoryService = {
   },
 
   // Get user stories for project backlog
-  async getProjectBacklog(projectId: number, params: Omit<GetUserStoriesParams, 'projectId'> = {}): Promise<PaginatedResponse<UserStory>> {
+  async getProjectBacklog(
+    projectId: number,
+    params: Omit<GetUserStoriesParams, 'projectId'> = {}
+  ): Promise<PaginatedResponse<UserStory>> {
     const response = await apiClient.get(`/projects/${projectId}/backlog`, { params });
     return response.data;
   },
 
   // Get user stories for sprint
-  async getSprintStories(sprintId: number, params: Omit<GetUserStoriesParams, 'sprintId'> = {}): Promise<PaginatedResponse<UserStory>> {
+  async getSprintStories(
+    sprintId: number,
+    params: Omit<GetUserStoriesParams, 'sprintId'> = {}
+  ): Promise<PaginatedResponse<UserStory>> {
     const response = await apiClient.get(`/sprints/${sprintId}/stories`, { params });
     return response.data;
   },

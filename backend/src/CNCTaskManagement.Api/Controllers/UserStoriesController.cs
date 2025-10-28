@@ -173,7 +173,7 @@ namespace CNCTaskManagement.Api.Controllers
                     us.Priority,
                     us.StoryPoints,
                     us.BusinessValue,
-                    AcceptanceCriteria = us.AcceptanceCriteria != null ? 
+                    AcceptanceCriteria = us.AcceptanceCriteria != null ?
                         JsonSerializer.Deserialize<object>(us.AcceptanceCriteria, new JsonSerializerOptions()) : new object(),
                     DueDate = us.DueDate.HasValue ? us.DueDate.Value.ToString("yyyy-MM-dd") : null,
                     us.IsActive,
@@ -274,6 +274,29 @@ namespace CNCTaskManagement.Api.Controllers
                 }
             }
 
+            // Handle AcceptanceCriteria - convert string to array if needed
+            string acceptanceCriteriaJson = "[]";
+            if (model.AcceptanceCriteria != null)
+            {
+                try
+                {
+                    // If it's already an object/array, serialize it
+                    acceptanceCriteriaJson = JsonSerializer.Serialize(model.AcceptanceCriteria);
+                }
+                catch
+                {
+                    // If serialization fails, try to convert string to array
+                    if (model.AcceptanceCriteria is string criteriaString && !string.IsNullOrEmpty(criteriaString))
+                    {
+                        acceptanceCriteriaJson = JsonSerializer.Serialize(new[] { new { description = criteriaString, completed = false } });
+                    }
+                    else
+                    {
+                        acceptanceCriteriaJson = "[]";
+                    }
+                }
+            }
+
             var userStory = new UserStory
             {
                 Title = model.Title,
@@ -286,8 +309,7 @@ namespace CNCTaskManagement.Api.Controllers
                 Priority = model.Priority,
                 StoryPoints = model.StoryPoints,
                 BusinessValue = model.BusinessValue,
-                AcceptanceCriteria = model.AcceptanceCriteria != null ? 
-                    JsonSerializer.Serialize(model.AcceptanceCriteria) : "[]",
+                AcceptanceCriteria = acceptanceCriteriaJson,
                 DueDate = model.DueDate,
                 IsActive = true
             };
@@ -295,7 +317,23 @@ namespace CNCTaskManagement.Api.Controllers
             _context.UserStories.Add(userStory);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetUserStory), new { id = userStory.Id }, userStory);
+            // Return a simple response to avoid serialization cycles
+            var response = new
+            {
+                userStory.Id,
+                userStory.Title,
+                userStory.Description,
+                userStory.Status,
+                userStory.Priority,
+                userStory.StoryPoints,
+                userStory.BusinessValue,
+                userStory.ProjectId,
+                userStory.CreatedAt,
+                userStory.UpdatedAt,
+                message = "User story created successfully"
+            };
+
+            return CreatedAtAction(nameof(GetUserStory), new { id = userStory.Id }, response);
         }
 
         /// <summary>
@@ -344,7 +382,7 @@ namespace CNCTaskManagement.Api.Controllers
             userStory.Priority = model.Priority ?? userStory.Priority;
             userStory.StoryPoints = model.StoryPoints ?? userStory.StoryPoints;
             userStory.BusinessValue = model.BusinessValue ?? userStory.BusinessValue;
-            userStory.AcceptanceCriteria = model.AcceptanceCriteria != null ? 
+            userStory.AcceptanceCriteria = model.AcceptanceCriteria != null ?
                 JsonSerializer.Serialize(model.AcceptanceCriteria) : userStory.AcceptanceCriteria;
             userStory.DueDate = model.DueDate ?? userStory.DueDate;
             userStory.UpdatedAt = DateTime.UtcNow;

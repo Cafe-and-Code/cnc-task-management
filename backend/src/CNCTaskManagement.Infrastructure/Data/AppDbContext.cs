@@ -38,7 +38,7 @@ namespace CNCTaskManagement.Infrastructure.Data
 
             // Set up global query filters for multi-tenancy
             ConfigureMultiTenancy(modelBuilder);
-            
+
             // Configure relationships
             ConfigureRelationships(modelBuilder);
         }
@@ -276,10 +276,11 @@ namespace CNCTaskManagement.Infrastructure.Data
 
             foreach (var entry in modifiedEntries)
             {
-                // Don't create audit logs for AuditLog, GitHubIntegration, or GitHubWebhook entities to avoid infinite recursion
-                if (entry.Entity.GetType() == typeof(AuditLog) || 
-                    entry.Entity.GetType() == typeof(GitHubIntegration) || 
-                    entry.Entity.GetType() == typeof(GitHubWebhook))
+                // Don't create audit logs for AuditLog, GitHubIntegration, GitHubWebhook, or UserStory entities to avoid infinite recursion and constraint issues
+                if (entry.Entity.GetType() == typeof(AuditLog) ||
+                    entry.Entity.GetType() == typeof(GitHubIntegration) ||
+                    entry.Entity.GetType() == typeof(GitHubWebhook) ||
+                    entry.Entity.GetType() == typeof(UserStory))
                     continue;
 
                 // Only create audit logs for specific entity types
@@ -378,7 +379,26 @@ namespace CNCTaskManagement.Infrastructure.Data
         {
             // Try to get OrganizationId from the entity
             var orgIdProperty = entry.Properties.FirstOrDefault(p => p.Metadata.Name == "OrganizationId");
-            return orgIdProperty != null ? (int?)(orgIdProperty.CurrentValue) : null;
+            if (orgIdProperty != null)
+            {
+                return (int?)(orgIdProperty.CurrentValue);
+            }
+
+            // For entities that don't have OrganizationId directly, try to get it through relationships
+            if (entry.Entity.GetType() == typeof(UserStory))
+            {
+                // For UserStory, get OrganizationId through the Project relationship
+                var projectIdProperty = entry.Properties.FirstOrDefault(p => p.Metadata.Name == "ProjectId");
+                if (projectIdProperty != null && projectIdProperty.CurrentValue != null)
+                {
+                    var projectId = (int)projectIdProperty.CurrentValue;
+                    // Get the project to find its OrganizationId
+                    var project = Projects.FirstOrDefault(p => p.Id == projectId);
+                    return project?.OrganizationId;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

@@ -186,6 +186,234 @@ namespace CNCTaskManagement.Api.Controllers
         }
 
         /// <summary>
+        /// Get project backlog (user stories not assigned to sprints)
+        /// </summary>
+        [HttpGet("{id}/backlog")]
+        public async Task<ActionResult<object>> GetProjectBacklog(
+            int id,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] string? search = null,
+            [FromQuery] UserStoryPriority? priority = null,
+            [FromQuery] UserStoryStatus? status = null,
+            [FromQuery] string? assigneeFilter = null,
+            [FromQuery] string? sortBy = "priority",
+            [FromQuery] string? sortOrder = "desc")
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUserOrganizationId = User.FindFirstValue("OrganizationId");
+
+            if (currentUserOrganizationId == null || currentUserId == null)
+            {
+                return Unauthorized();
+            }
+
+            var organizationId = int.Parse(currentUserOrganizationId);
+
+            // Verify project exists and belongs to the organization
+            var project = await _context.Projects
+                .FirstOrDefaultAsync(p => p.Id == id && p.OrganizationId == organizationId);
+
+            if (project == null)
+            {
+                return NotFound(new { Message = "Project not found" });
+            }
+
+            // Start with base query - get user stories that are in backlog (not assigned to sprints)
+            var query = _context.UserStories
+                .Include(us => us.CreatedByUser)
+                .Include(us => us.AssignedToUser)
+                .Include(us => us.Tasks)
+                    .ThenInclude(t => t.AssignedToUser)
+                .Where(us => us.ProjectId == id && us.SprintId == null && us.IsActive);
+
+            // Apply filters
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(us =>
+                    us.Title.Contains(search) ||
+                    (us.Description != null && us.Description.Contains(search)));
+            }
+
+            if (status.HasValue)
+            {
+                query = query.Where(us => us.Status == status.Value);
+            }
+
+            if (priority.HasValue)
+            {
+                query = query.Where(us => us.Priority == priority.Value);
+            }
+
+            if (!string.IsNullOrEmpty(assigneeFilter) && assigneeFilter != "all")
+            {
+                if (assigneeFilter == "unassigned")
+                {
+                    query = query.Where(us => us.AssignedToUserId == null);
+                }
+                else
+                {
+                    var assigneeId = int.Parse(assigneeFilter);
+                    query = query.Where(us => us.AssignedToUserId == assigneeId);
+                }
+            }
+
+            // Apply sorting
+            query = sortBy?.ToLower() switch
+            {
+                "storypoints" => sortOrder?.ToLower() == "asc"
+                    ? query.OrderBy(us => us.StoryPoints)
+                    : query.OrderByDescending(us => us.StoryPoints),
+                "created" => sortOrder?.ToLower() == "asc"
+                    ? query.OrderBy(us => us.CreatedAt)
+                    : query.OrderByDescending(us => us.CreatedAt),
+                "updated" => sortOrder?.ToLower() == "asc"
+                    ? query.OrderBy(us => us.UpdatedAt)
+                    : query.OrderByDescending(us => us.UpdatedAt),
+                "title" => sortOrder?.ToLower() == "asc"
+                    ? query.OrderBy(us => us.Title)
+                    : query.OrderByDescending(us => us.Title),
+                _ => sortOrder?.ToLower() == "asc"
+                    ? query.OrderBy(us => us.Priority)
+                    : query.OrderByDescending(us => us.Priority)
+            };
+
+            // Get total count
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var userStories = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(us => new
+                {
+                    us.Id,
+                    us.Title,
+                    us.Description,
+                    us.Status,
+                    us.Priority,
+                    us.StoryPoints,
+                    us.BusinessValue,
+                    DueDate = us.DueDate.HasValue ? us.DueDate.Value.ToString("yyyy-MM-dd") : null,
+                    us.IsActive,
+                    CreatedByUser = us.CreatedByUser != null ? new
+                    {
+                        us.CreatedByUser.Id,
+                        us.CreatedByUser.FirstName,
+                        us.CreatedByUser.LastName,
+                        us.CreatedByUser.AvatarUrl
+                    } : null,
+                    AssignedToUser = us.AssignedToUser != null ? new
+                    {
+                        us.AssignedToUser.Id,
+                        us.AssignedToUser.FirstName,
+                        us.AssignedToUser.LastName,
+                        us.AssignedToUser.AvatarUrl
+                    } : null,
+                    TaskCount = us.Tasks.Count(t => t.IsActive),
+                    CompletedTaskCount = us.Tasks.Count(t => t.IsActive && t.Status == Core.Enums.TaskStatus.Completed),
+                    TotalEstimatedHours = us.Tasks.Where(t => t.IsActive).Sum(t => t.EstimatedHours),
+                    AcceptanceCriteria = us.AcceptanceCriteria != null ?
+                        System.Text.Json.JsonSerializer.Deserialize<object>(us.AcceptanceCriteria, new System.Text.Json.JsonSerializerOptions()) : new object(),
+                    us.CreatedAt,
+                    us.UpdatedAt
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                items = userStories,
+                pagination = new
+                {
+                    page,
+                    pageSize,
+                    totalCount,
+                    totalPages = (int)Math.Ceiling((double)totalCount / pageSize)
+                }
+            });
+        }
+
+        /// <summary>
+        /// Get project sprints for a project
+        /// </summary>
+        [HttpGet("{id}/sprints")]
+        public async Task<ActionResult<object>> GetProjectSprints(
+            int id,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] SprintStatus? status = null)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUserOrganizationId = User.FindFirstValue("OrganizationId");
+
+            if (currentUserOrganizationId == null || currentUserId == null)
+            {
+                return Unauthorized();
+            }
+
+            var organizationId = int.Parse(currentUserOrganizationId);
+
+            // Verify project exists and belongs to the organization
+            var project = await _context.Projects
+                .FirstOrDefaultAsync(p => p.Id == id && p.OrganizationId == organizationId);
+
+            if (project == null)
+            {
+                return NotFound(new { Message = "Project not found" });
+            }
+
+            // Start with base query - get sprints for the project
+            var query = _context.Sprints
+                .Include(s => s.UserStories)
+                .Where(s => s.ProjectId == id && s.IsActive);
+
+            // Apply filters
+            if (status.HasValue)
+            {
+                query = query.Where(s => s.Status == status.Value);
+            }
+
+            // Get total count
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var sprints = await query
+                .OrderByDescending(s => s.StartDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(s => new
+                {
+                    s.Id,
+                    s.Name,
+                    Goal = s.Description,
+                    s.Status,
+                    StartDate = s.StartDate.ToString("yyyy-MM-dd"),
+                    EndDate = s.EndDate.ToString("yyyy-MM-dd"),
+                    Capacity = s.VelocityGoal,
+                    Velocity = s.VelocityActual,
+                    StoryCount = s.UserStories.Count(us => us.IsActive),
+                    TaskCount = s.UserStories.SelectMany(us => us.Tasks).Count(t => t.IsActive),
+                    CompletedTasks = s.UserStories.SelectMany(us => us.Tasks).Count(t => t.IsActive && t.Status == Core.Enums.TaskStatus.Completed),
+                    RemainingTasks = s.UserStories.SelectMany(us => us.Tasks).Count(t => t.IsActive && t.Status != Core.Enums.TaskStatus.Completed),
+                    s.CreatedAt,
+                    s.UpdatedAt
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                items = sprints,
+                pagination = new
+                {
+                    page,
+                    pageSize,
+                    totalCount,
+                    totalPages = (int)Math.Ceiling((double)totalCount / pageSize)
+                }
+            });
+        }
+
+        /// <summary>
         /// Create a new project
         /// </summary>
         [HttpPost]

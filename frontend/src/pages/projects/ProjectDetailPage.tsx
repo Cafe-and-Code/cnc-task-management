@@ -11,7 +11,7 @@ import {
   SprintStatus,
   TeamMember,
   TeamRole,
-  User
+  User,
 } from '@types/index';
 import { useRolePermission } from '@components/auth/RoleBasedRoute';
 import { LoadingSpinner } from '@components/ui/LoadingSpinner';
@@ -228,10 +228,17 @@ export const ProjectDetailPage: React.FC = () => {
     if (!state.project) return;
 
     try {
-      const newStory = await userStoryService.createUserStory({
+      // Format the data to match backend expectations
+      const formattedStoryData = {
         ...storyData,
         projectId: state.project.id,
-      });
+        // Convert acceptanceCriteria string to array of criteria if it's a string
+        acceptanceCriteria: storyData.acceptanceCriteria
+          ? [{ description: storyData.acceptanceCriteria, completed: false }]
+          : [],
+      };
+
+      const newStory = await userStoryService.createUserStory(formattedStoryData);
       setState(prev => ({
         ...prev,
         stories: [...prev.stories, newStory],
@@ -331,7 +338,9 @@ export const ProjectDetailPage: React.FC = () => {
       setState(prev => ({
         ...prev,
         teamMembers: prev.teamMembers.filter(m => m.userId !== userId),
-        availableUsers: removedMember ? [...prev.availableUsers, removedMember.user] : prev.availableUsers,
+        availableUsers: removedMember
+          ? [...prev.availableUsers, removedMember.user]
+          : prev.availableUsers,
       }));
     } catch (error: any) {
       console.error('Failed to remove member:', error);
@@ -345,11 +354,7 @@ export const ProjectDetailPage: React.FC = () => {
         return <OverviewTab project={state.project} />;
       case 'backlog':
         return (
-          <BacklogTab
-            project={state.project}
-            stories={state.stories}
-            onAddStory={handleAddStory}
-          />
+          <BacklogTab project={state.project} stories={state.stories} onAddStory={handleAddStory} />
         );
       case 'sprints':
         return (
@@ -538,19 +543,23 @@ export const ProjectDetailPage: React.FC = () => {
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">Add User Story</h3>
             </div>
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.currentTarget);
-              handleCreateStory({
-                title: formData.get('title'),
-                description: formData.get('description'),
-                acceptanceCriteria: formData.get('acceptanceCriteria'),
-                storyPoints: parseInt(formData.get('storyPoints') as string),
-                priority: parseInt(formData.get('priority') as string),
-                businessValue: parseInt(formData.get('businessValue') as string),
-                estimatedHours: formData.get('estimatedHours') ? parseInt(formData.get('estimatedHours') as string) : undefined,
-              });
-            }}>
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                handleCreateStory({
+                  title: formData.get('title'),
+                  description: formData.get('description'),
+                  acceptanceCriteria: formData.get('acceptanceCriteria'),
+                  storyPoints: parseInt(formData.get('storyPoints') as string),
+                  priority: parseInt(formData.get('priority') as string),
+                  businessValue: parseInt(formData.get('businessValue') as string),
+                  estimatedHours: formData.get('estimatedHours')
+                    ? parseInt(formData.get('estimatedHours') as string)
+                    : undefined,
+                });
+              }}
+            >
               <div className="p-6 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -664,17 +673,19 @@ export const ProjectDetailPage: React.FC = () => {
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">Create Sprint</h3>
             </div>
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.currentTarget);
-              handleCreateSprintSubmit({
-                name: formData.get('name'),
-                goal: formData.get('goal'),
-                startDate: formData.get('startDate'),
-                endDate: formData.get('endDate'),
-                capacity: parseInt(formData.get('capacity') as string),
-              });
-            }}>
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                handleCreateSprintSubmit({
+                  name: formData.get('name'),
+                  goal: formData.get('goal'),
+                  startDate: formData.get('startDate'),
+                  endDate: formData.get('endDate'),
+                  capacity: parseInt(formData.get('capacity') as string),
+                });
+              }}
+            >
               <div className="p-6 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -764,14 +775,16 @@ export const ProjectDetailPage: React.FC = () => {
                 No available users to add to this project.
               </div>
             ) : (
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                handleAddMemberSubmit({
-                  userId: parseInt(formData.get('userId') as string),
-                  role: formData.get('role') as TeamRole,
-                });
-              }}>
+              <form
+                onSubmit={e => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  handleAddMemberSubmit({
+                    userId: parseInt(formData.get('userId') as string),
+                    role: formData.get('role') as TeamRole,
+                  });
+                }}
+              >
                 <div className="p-6 space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -783,7 +796,7 @@ export const ProjectDetailPage: React.FC = () => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     >
                       <option value="">Choose a user...</option>
-                      {state.availableUsers.map((user) => (
+                      {state.availableUsers.map(user => (
                         <option key={user.id} value={user.id}>
                           {user.firstName} {user.lastName} ({user.email})
                         </option>
@@ -934,7 +947,7 @@ const OverviewTab: React.FC<{ project: any }> = ({ project }) => {
 const BacklogTab: React.FC<{ project: any; stories: UserStory[]; onAddStory: () => void }> = ({
   project,
   stories,
-  onAddStory
+  onAddStory,
 }) => {
   return (
     <div className="space-y-4">
@@ -953,7 +966,7 @@ const BacklogTab: React.FC<{ project: any; stories: UserStory[]; onAddStory: () 
         </div>
       ) : (
         <div className="space-y-3">
-          {stories.map((story) => (
+          {stories.map(story => (
             <div
               key={story.id}
               className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow"
@@ -975,13 +988,15 @@ const BacklogTab: React.FC<{ project: any; stories: UserStory[]; onAddStory: () 
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    story.status === UserStoryStatus.Done
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                      : story.status === UserStoryStatus.InProgress
-                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
-                      : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
-                  }`}>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      story.status === UserStoryStatus.Done
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                        : story.status === UserStoryStatus.InProgress
+                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
+                          : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+                    }`}
+                  >
                     {story.status}
                   </span>
                 </div>
@@ -997,7 +1012,7 @@ const BacklogTab: React.FC<{ project: any; stories: UserStory[]; onAddStory: () 
 const SprintsTab: React.FC<{ project: any; sprints: Sprint[]; onCreateSprint: () => void }> = ({
   project,
   sprints,
-  onCreateSprint
+  onCreateSprint,
 }) => {
   return (
     <div className="space-y-4">
@@ -1016,7 +1031,7 @@ const SprintsTab: React.FC<{ project: any; sprints: Sprint[]; onCreateSprint: ()
         </div>
       ) : (
         <div className="space-y-3">
-          {sprints.map((sprint) => (
+          {sprints.map(sprint => (
             <div
               key={sprint.id}
               className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow"
@@ -1027,9 +1042,7 @@ const SprintsTab: React.FC<{ project: any; sprints: Sprint[]; onCreateSprint: ()
                     {sprint.name}
                   </h4>
                   {sprint.goal && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                      {sprint.goal}
-                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{sprint.goal}</p>
                   )}
                   <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
                     <span>Capacity: {sprint.capacity}</span>
@@ -1037,21 +1050,24 @@ const SprintsTab: React.FC<{ project: any; sprints: Sprint[]; onCreateSprint: ()
                     <span>Tasks: {sprint.taskCount || 0}</span>
                     {sprint.startDate && (
                       <span>
-                        {new Date(sprint.startDate).toLocaleDateString()} - {sprint.endDate ? new Date(sprint.endDate).toLocaleDateString() : 'Ongoing'}
+                        {new Date(sprint.startDate).toLocaleDateString()} -{' '}
+                        {sprint.endDate ? new Date(sprint.endDate).toLocaleDateString() : 'Ongoing'}
                       </span>
                     )}
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    sprint.status === SprintStatus.Active
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                      : sprint.status === SprintStatus.Completed
-                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
-                      : sprint.status === SprintStatus.Planning
-                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
-                      : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
-                  }`}>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      sprint.status === SprintStatus.Active
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                        : sprint.status === SprintStatus.Completed
+                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
+                          : sprint.status === SprintStatus.Planning
+                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+                            : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+                    }`}
+                  >
                     {sprint.status}
                   </span>
                 </div>
@@ -1069,12 +1085,7 @@ const TeamTab: React.FC<{
   teamMembers: TeamMember[];
   onAddMember: () => void;
   onRemoveMember: (userId: number) => void;
-}> = ({
-  project,
-  teamMembers,
-  onAddMember,
-  onRemoveMember
-}) => {
+}> = ({ project, teamMembers, onAddMember, onRemoveMember }) => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -1092,7 +1103,7 @@ const TeamTab: React.FC<{
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {teamMembers.map((member) => (
+          {teamMembers.map(member => (
             <div
               key={member.id}
               className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4"
@@ -1106,9 +1117,7 @@ const TeamTab: React.FC<{
                   <h4 className="text-sm font-medium text-gray-900 dark:text-white">
                     {member.user.firstName} {member.user.lastName}
                   </h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {member.user.email}
-                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{member.user.email}</p>
                 </div>
                 {true && (
                   <button
@@ -1117,21 +1126,28 @@ const TeamTab: React.FC<{
                     title="Remove member"
                   >
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
                     </svg>
                   </button>
                 )}
               </div>
               <div className="flex items-center justify-between">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  member.role === TeamRole.ProductOwner
-                    ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400'
-                    : member.role === TeamRole.ScrumMaster
-                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
-                    : member.role === TeamRole.Developer
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                    : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
-                }`}>
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    member.role === TeamRole.ProductOwner
+                      ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400'
+                      : member.role === TeamRole.ScrumMaster
+                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
+                        : member.role === TeamRole.Developer
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                          : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+                  }`}
+                >
                   {member.role}
                 </span>
                 <span className="text-xs text-gray-500 dark:text-gray-400">
