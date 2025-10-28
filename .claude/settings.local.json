@@ -28,7 +28,11 @@
       "Bash(findstr:*)",
       "Bash(cmd:*)",
       "Bash(dotnet:*)",
-      "Bash(tasklist:*)"
+      "Bash(tasklist:*)",
+      "Bash(npx openspec list:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []
